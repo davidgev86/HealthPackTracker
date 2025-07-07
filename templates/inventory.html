@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block title %}Inventory - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-boxes me-2"></i>Inventory Management</h2>
+    {% if user.has_permission('edit') %}
+    <a href="{{ url_for('add_item') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add Item
+    </a>
+    {% endif %}
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Items</h5>
+                <h3>{{ items|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">Low Stock</h5>
+                <h3>{{ low_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Categories</h5>
+                <h3>{{ items|map(attribute='category')|unique|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Value</h5>
+                <h3>${{ items|sum(attribute='quantity')|default(0) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Current Inventory</h5>
+    </div>
+    <div class="card-body">
+        {% if items %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Current Stock</th>
+                        <th>Unit</th>
+                        <th>Par Level</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr class="{% if item.is_low_stock() %}table-warning{% endif %}">
+                        <td>
+                            <strong>{{ item.name }}</strong>
+                            {% if item.is_low_stock() %}
+                            <i class="fas fa-exclamation-triangle text-warning ms-2" title="Low Stock"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.category }}</td>
+                        <td>
+                            {% if user.has_permission('record_counts') %}
+                            <form method="POST" action="{{ url_for('update_count', item_name=item.name) }}" class="d-inline">
+                                <div class="input-group input-group-sm" style="width: 100px;">
+                                    <input type="number" class="form-control" name="count" value="{{ item.quantity }}" min="0">
+                                    <button class="btn btn-outline-secondary" type="submit" title="Update Count">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ item.quantity }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.unit }}</td>
+                        <td>{{ item.par_level }}</td>
+                        <td>
+                            {% if item.is_low_stock() %}
+                            <span class="badge bg-warning">Low Stock</span>
+                            {% else %}
+                            <span class="badge bg-success">OK</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.last_updated or 'N/A' }}</td>
+                        <td>
+                            {% if user.has_permission('edit') %}
+                            <a href="{{ url_for('edit_item', item_name=item.name) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                            {% if user.has_permission('delete') %}
+                            <form method="POST" action="{{ url_for('delete_item', item_name=item.name) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this item?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No inventory items found</h5>
+            <p class="text-muted">Get started by adding your first inventory item.</p>
+            {% if user.has_permission('edit') %}
+            <a href="{{ url_for('add_item') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add First Item
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-submit count updates after 2 seconds of inactivity
+let countTimers = {};
+document.querySelectorAll('input[name="count"]').forEach(input => {
+    input.addEventListener('input', function() {
+        const form = this.closest('form');
+        const itemName = form.action.split('/').pop();
+        
+        // Clear existing timer
+        if (countTimers[itemName]) {
+            clearTimeout(countTimers[itemName]);
+        }
+        
+        // Set new timer
+        countTimers[itemName] = setTimeout(() => {
+            form.submit();
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}
