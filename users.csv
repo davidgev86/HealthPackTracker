@@ -1,1 +1,2 @@
 username,password_hash,role,email
+admin,scrypt:32768:8:1$U7El76X8o6mnoDru$bc2be2afb1ca58c0ce82443717ff62313869b7b50a50895d26358a64b4727db0f5e5d946bf951c9687ee63047f246be394da6544e8df1c2c0210049ad899f862,admin,admin@healthpackmeals.com
