@@ -1,0 +1,4 @@
+# Desktop Application Requirements
+flask==3.0.0
+werkzeug==3.0.1
+pyinstaller==6.3.0

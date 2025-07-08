@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}Import/Export - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-import me-2"></i>Import Inventory</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="import_file" class="form-label">Select CSV File</label>
+                        <input type="file" class="form-control" id="import_file" name="import_file" accept=".csv" required>
+                        <div class="form-text">Upload a CSV file with inventory data</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>CSV Format Requirements:</h6>
+                        <ul class="mb-0">
+                            <li>Required columns: <code>name</code>, <code>unit</code>, <code>quantity</code>, <code>par_level</code></li>
+                            <li>Optional columns: <code>category</code>, <code>last_updated</code></li>
+                            <li>First row must contain column headers</li>
+                            <li>Quantity and par_level must be numeric values</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> Importing will replace all current inventory data.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Import Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-export me-2"></i>Export Inventory</h4>
+            </div>
+            <div class="card-body">
+                <p>Download your current inventory data as a CSV file for backup or external use.</p>
+                
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle me-2"></i>Export Includes:</h6>
+                    <ul class="mb-0">
+                        <li>All inventory items with current quantities</li>
+                        <li>Item categories and units</li>
+                        <li>Par levels and last updated timestamps</li>
+                        <li>Compatible format for re-importing</li>
+                    </ul>
+                </div>
+                
+                <a href="{{ url_for('export_csv') }}" class="btn btn-success">
+                    <i class="fas fa-download me-2"></i>Export to CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-table me-2"></i>CSV Template</h4>
+            </div>
+            <div class="card-body">
+                <p>Use this template to create your own CSV file for importing:</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>name</th>
+                                <th>unit</th>
+                                <th>quantity</th>
+                                <th>par_level</th>
+                                <th>category</th>
+                                <th>last_updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Chicken Breast</td>
+                                <td>lbs</td>
+                                <td>25</td>
+                                <td>10</td>
+                                <td>Proteins</td>
+                                <td>2024-01-15 10:30:00</td>
+                            </tr>
+                            <tr>
+                                <td>Rice</td>
+                                <td>kg</td>
+                                <td>15</td>
+                                <td>5</td>
+                                <td>Grains</td>
+                                <td>2024-01-15 10:30:00</td>
+                            </tr>
+                            <tr>
+                                <td>Olive Oil</td>
+                                <td>liters</td>
+                                <td>8</td>
+                                <td>3</td>
+                                <td>General</td>
+                                <td>2024-01-15 10:30:00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-outline-primary" onclick="downloadTemplate()">
+                        <i class="fas fa-download me-2"></i>Download Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function downloadTemplate() {
+    const csvContent = "name,unit,quantity,par_level,category,last_updated\n" +
+                      "Chicken Breast,lbs,25,10,Proteins,2024-01-15 10:30:00\n" +
+                      "Rice,kg,15,5,Grains,2024-01-15 10:30:00\n" +
+                      "Olive Oil,liters,8,3,General,2024-01-15 10:30:00\n";
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'hpm_inventory_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %}
