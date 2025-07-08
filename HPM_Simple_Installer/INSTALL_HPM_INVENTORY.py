@@ -184,23 +184,41 @@ Installation location: """ + str(self.install_path)
     
     def install_python(self):
         """Download and install Python automatically"""
-        python_url = "https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe"
-        python_installer = self.install_path / "python_installer.exe"
-        
-        # Download Python installer
-        urllib.request.urlretrieve(python_url, python_installer)
-        
-        # Run Python installer silently
-        subprocess.run([
-            str(python_installer),
-            "/quiet",
-            "InstallAllUsers=0",
-            "PrependPath=1",
-            "Include_test=0"
-        ], check=True)
-        
-        # Clean up installer
-        python_installer.unlink()
+        if sys.platform == "win32":
+            # Windows installation
+            python_url = "https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe"
+            python_installer = self.install_path / "python_installer.exe"
+            
+            # Download Python installer
+            urllib.request.urlretrieve(python_url, python_installer)
+            
+            # Run Python installer silently
+            subprocess.run([
+                str(python_installer),
+                "/quiet",
+                "InstallAllUsers=0",
+                "PrependPath=1",
+                "Include_test=0"
+            ], check=True)
+            
+            # Clean up installer
+            python_installer.unlink()
+            
+        elif sys.platform == "darwin":
+            # macOS installation
+            python_url = "https://www.python.org/ftp/python/3.11.7/python-3.11.7-macos11.pkg"
+            python_installer = self.install_path / "python_installer.pkg"
+            
+            # Download Python installer
+            urllib.request.urlretrieve(python_url, python_installer)
+            
+            # Run Python installer
+            subprocess.run([
+                "sudo", "installer", "-pkg", str(python_installer), "-target", "/"
+            ], check=True)
+            
+            # Clean up installer
+            python_installer.unlink()
         
         # Update Python path
         self.python_installed = True
@@ -240,27 +258,79 @@ Installation location: """ + str(self.install_path)
         try:
             desktop = Path.home() / "Desktop"
             
-            # Create batch file to run the application
-            batch_file = self.install_path / "HPM_Inventory.bat"
-            batch_content = f"""@echo off
+            if sys.platform == "win32":
+                # Windows: Create batch file
+                batch_file = self.install_path / "HPM_Inventory.bat"
+                batch_content = f"""@echo off
 cd /d "{self.install_path}"
 python desktop_app.py
 pause"""
-            
-            with open(batch_file, "w") as f:
-                f.write(batch_content)
-            
-            # Create desktop shortcut (Windows)
-            if sys.platform == "win32":
-                import win32com.client
-                shell = win32com.client.Dispatch("WScript.Shell")
-                shortcut = shell.CreateShortCut(str(desktop / "HPM Inventory Tracker.lnk"))
-                shortcut.Targetpath = str(batch_file)
-                shortcut.WorkingDirectory = str(self.install_path)
-                shortcut.IconLocation = str(batch_file)
-                shortcut.save()
-        except ImportError:
-            # Fallback: just create the batch file
+                
+                with open(batch_file, "w") as f:
+                    f.write(batch_content)
+                
+                # Create Windows shortcut
+                try:
+                    import win32com.client
+                    shell = win32com.client.Dispatch("WScript.Shell")
+                    shortcut = shell.CreateShortCut(str(desktop / "HPM Inventory Tracker.lnk"))
+                    shortcut.Targetpath = str(batch_file)
+                    shortcut.WorkingDirectory = str(self.install_path)
+                    shortcut.IconLocation = str(batch_file)
+                    shortcut.save()
+                except ImportError:
+                    # Fallback: copy batch file to desktop
+                    shutil.copy2(batch_file, desktop / "HPM Inventory Tracker.bat")
+                    
+            elif sys.platform == "darwin":
+                # macOS: Create shell script
+                script_file = self.install_path / "HPM_Inventory.sh"
+                script_content = f"""#!/bin/bash
+cd "{self.install_path}"
+python3 desktop_app.py"""
+                
+                with open(script_file, "w") as f:
+                    f.write(script_content)
+                
+                # Make script executable
+                os.chmod(script_file, 0o755)
+                
+                # Create macOS app bundle
+                app_dir = desktop / "HPM Inventory Tracker.app"
+                contents_dir = app_dir / "Contents"
+                macos_dir = contents_dir / "MacOS"
+                resources_dir = contents_dir / "Resources"
+                
+                # Create directories
+                macos_dir.mkdir(parents=True, exist_ok=True)
+                resources_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Create Info.plist
+                info_plist = f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>HPM_Inventory</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.hpm.inventory</string>
+    <key>CFBundleName</key>
+    <string>HPM Inventory Tracker</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+</dict>
+</plist>"""
+                
+                with open(contents_dir / "Info.plist", "w") as f:
+                    f.write(info_plist)
+                
+                # Copy script to app bundle
+                shutil.copy2(script_file, macos_dir / "HPM_Inventory")
+                
+        except Exception as e:
+            # Fallback: just create the script file
             pass
     
     def show_completion_dialog(self):

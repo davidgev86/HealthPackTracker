@@ -2,13 +2,28 @@
 
 ## For Non-Technical Users (EASIEST METHOD)
 
-### Option 1: One-Click Installation
+### Windows Users
+
+#### Option 1: One-Click Installation (Recommended)
 1. Double-click "INSTALL.bat"
 2. Follow the prompts
 3. Wait for installation to complete
 4. Start using the application!
 
-### Option 2: Python Installation (if Option 1 doesn't work)
+#### Option 2: Python GUI Installer
+1. Double-click "INSTALL_HPM_INVENTORY.py"
+2. Click "Install HPM Inventory Tracker"
+3. Wait for installation to complete
+
+### Mac Users
+
+#### Option 1: Terminal Installation (Recommended)
+1. Double-click "install_mac.sh"
+2. Follow the prompts
+3. Wait for installation to complete
+4. Start using the application!
+
+#### Option 2: Python GUI Installer
 1. Double-click "INSTALL_HPM_INVENTORY.py"
 2. Click "Install HPM Inventory Tracker"
 3. Wait for installation to complete
@@ -31,8 +46,8 @@
 
 ## Your Data Location
 
-Your inventory data will be stored at:
-C:\Users\[YourName]\HPM_Inventory_Data\
+**Windows:** C:\Users\[YourName]\HPM_Inventory_Data\
+**Mac:** /Users/[YourName]/HPM_Inventory_Data/
 
 ## Need Help?
 
