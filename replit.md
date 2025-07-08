@@ -68,6 +68,29 @@ The application follows a simple MVC (Model-View-Controller) pattern built on Fl
 - **CSV Files**: inventory.csv, users.csv, waste_log.csv for data persistence
 - **Static Assets**: Custom CSS for mobile responsiveness
 
+## Desktop Application
+
+A standalone desktop version has been created that can run on both macOS and Windows computers:
+
+### Desktop Architecture
+- **Tkinter GUI**: Simple desktop launcher interface
+- **Local Flask Server**: Embedded web server running on localhost
+- **Data Management**: Automatic data folder creation in user's home directory
+- **PyInstaller**: Creates standalone executables for distribution
+
+### Desktop Features
+- Cross-platform compatibility (macOS and Windows)
+- No internet connection required
+- Automatic data backup functionality
+- Simple one-click launcher
+- User-friendly installation process
+
+### Distribution Package
+- Complete source code with installation scripts
+- ZIP file for easy distribution
+- Platform-specific installation instructions
+- Automated dependency installation
+
 ## Deployment Strategy
 
 The application is designed for simple deployment with minimal infrastructure requirements:
@@ -89,8 +112,10 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 08, 2025. Created standalone desktop application version
 - July 07, 2025. Initial setup
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Desktop Application: User wants standalone desktop application for Mac and Windows computers.

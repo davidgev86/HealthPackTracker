@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %}Waste Log - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-trash me-2"></i>Waste Log</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#wasteModal">
+        <i class="fas fa-plus me-2"></i>Log Waste
+    </button>
+</div>
+
+<!-- Waste Log Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Recent Waste Entries</h5>
+    </div>
+    <div class="card-body">
+        {% if waste_entries %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Reason</th>
+                        <th>Logged By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in waste_entries|reverse %}
+                    <tr>
+                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.item_name }}</td>
+                        <td>{{ entry.quantity }}</td>
+                        <td>{{ entry.unit }}</td>
+                        <td>{{ entry.reason }}</td>
+                        <td>{{ entry.logged_by }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No waste entries found</h5>
+            <p class="text-muted">Start logging waste to track inventory losses.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Waste Log Modal -->
+<div class="modal fade" id="wasteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-trash me-2"></i>Log Waste
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="item_name" class="form-label">Item Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="item_name" name="item_name" list="inventory_items" required>
+                        <datalist id="inventory_items">
+                            {% for item in inventory_items %}
+                            <option value="{{ item.name }}">{{ item.name }} ({{ item.quantity }} {{ item.unit }})</option>
+                            {% endfor %}
+                        </datalist>
+                        <div class="form-text">Type or select from existing inventory items</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unit" class="form-label">Unit <span class="text-danger">*</span></label>
+                                <select class="form-select" id="unit" name="unit" required>
+                                    <option value="">Select Unit</option>
+                                    <option value="pieces">Pieces</option>
+                                    <option value="kg">Kilograms</option>
+                                    <option value="lbs">Pounds</option>
+                                    <option value="oz">Ounces</option>
+                                    <option value="liters">Liters</option>
+                                    <option value="gallons">Gallons</option>
+                                    <option value="cups">Cups</option>
+                                    <option value="boxes">Boxes</option>
+                                    <option value="bags">Bags</option>
+                                    <option value="cans">Cans</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                        <select class="form-select" id="reason" name="reason" required>
+                            <option value="">Select Reason</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Spoiled">Spoiled</option>
+                            <option value="Contaminated">Contaminated</option>
+                            <option value="Preparation Error">Preparation Error</option>
+                            <option value="Customer Return">Customer Return</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Logging waste will automatically reduce the quantity in your inventory if the item exists.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Log Waste
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-fill unit when item is selected
+document.getElementById('item_name').addEventListener('input', function() {
+    const itemName = this.value;
+    const inventoryItems = {{ inventory_items|map(attribute='name')|list|tojson }};
+    const inventoryData = {{ inventory_items|map(attribute='to_dict')|list|tojson }};
+    
+    // Find matching item
+    for (let i = 0; i < inventoryItems.length; i++) {
+        if (inventoryItems[i] === itemName) {
+            document.getElementById('unit').value = inventoryData[i].unit;
+            break;
+        }
+    }
+});
+</script>
+{% endblock %}
