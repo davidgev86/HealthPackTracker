@@ -216,9 +216,13 @@ def waste_log():
     inventory_items = read_inventory()
     user = get_user(session['username'])
     
+    # Convert inventory items to dict format for JavaScript
+    inventory_data = [item.to_dict() for item in inventory_items]
+    
     return render_template('waste_log.html', 
                          waste_entries=waste_entries, 
                          inventory_items=inventory_items,
+                         inventory_data=inventory_data,
                          user=user)
 
 @app.route('/import_export', methods=['GET', 'POST'])

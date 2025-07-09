@@ -140,7 +140,7 @@
 document.getElementById('item_name').addEventListener('input', function() {
     const itemName = this.value;
     const inventoryItems = {{ inventory_items|map(attribute='name')|list|tojson }};
-    const inventoryData = {{ inventory_items|map(attribute='to_dict')|list|tojson }};
+    const inventoryData = {{ inventory_data|tojson }};
     
     // Find matching item
     for (let i = 0; i < inventoryItems.length; i++) {
