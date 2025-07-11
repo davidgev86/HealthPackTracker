@@ -50,8 +50,18 @@
 
 <!-- Inventory Table -->
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Current Inventory</h5>
+        {% if user.has_permission('edit') %}
+        <div class="btn-group">
+            <button class="btn btn-sm btn-outline-primary" onclick="toggleBulkEdit()">
+                <i class="fas fa-edit me-1"></i>Bulk Edit
+            </button>
+            <button class="btn btn-sm btn-outline-success" id="saveAllBtn" style="display: none;" onclick="saveAllChanges()">
+                <i class="fas fa-save me-1"></i>Save All
+            </button>
+        </div>
+        {% endif %}
     </div>
     <div class="card-body">
         {% if items %}
@@ -82,9 +92,9 @@
                         </td>
                         <td>{{ item.category }}</td>
                         <td>
-                            {% if user.has_permission('record_counts') %}
+                            {% if user.has_permission('record_counts') or user.has_permission('edit') %}
                             <form method="POST" action="{{ url_for('update_count', item_name=item.name) }}" class="d-inline">
-                                <div class="input-group input-group-sm" style="width: 100px;">
+                                <div class="input-group input-group-sm" style="width: 120px;">
                                     <input type="number" class="form-control" name="count" value="{{ item.quantity }}" min="0">
                                     <button class="btn btn-outline-secondary" type="submit" title="Update Count">
                                         <i class="fas fa-check"></i>
@@ -162,5 +172,81 @@ document.querySelectorAll('input[name="count"]').forEach(input => {
         }, 2000);
     });
 });
+
+// Bulk edit functionality
+let bulkEditMode = false;
+let originalValues = {};
+
+function toggleBulkEdit() {
+    bulkEditMode = !bulkEditMode;
+    const saveAllBtn = document.getElementById('saveAllBtn');
+    const quantityInputs = document.querySelectorAll('input[name="count"]');
+    const submitButtons = document.querySelectorAll('form button[type="submit"]');
+    
+    if (bulkEditMode) {
+        // Store original values and disable auto-submit
+        quantityInputs.forEach(function(input) {
+            originalValues[input.closest('form').action] = input.value;
+            input.style.backgroundColor = '#fff3cd';
+            // Clear existing timers
+            const itemName = input.closest('form').action.split('/').pop();
+            if (countTimers[itemName]) {
+                clearTimeout(countTimers[itemName]);
+            }
+        });
+        
+        // Hide individual submit buttons
+        submitButtons.forEach(function(btn) {
+            btn.style.display = 'none';
+        });
+        
+        saveAllBtn.style.display = 'inline-block';
+        document.querySelector('[onclick="toggleBulkEdit()"]').innerHTML = '<i class="fas fa-times me-1"></i>Cancel';
+    } else {
+        // Restore original values
+        quantityInputs.forEach(function(input) {
+            const formAction = input.closest('form').action;
+            input.value = originalValues[formAction];
+            input.style.backgroundColor = '';
+        });
+        
+        // Show individual submit buttons
+        submitButtons.forEach(function(btn) {
+            btn.style.display = 'inline-block';
+        });
+        
+        saveAllBtn.style.display = 'none';
+        document.querySelector('[onclick="toggleBulkEdit()"]').innerHTML = '<i class="fas fa-edit me-1"></i>Bulk Edit';
+    }
+}
+
+function saveAllChanges() {
+    const quantityInputs = document.querySelectorAll('input[name="count"]');
+    const promises = [];
+    
+    quantityInputs.forEach(function(input) {
+        const formAction = input.closest('form').action;
+        if (input.value !== originalValues[formAction]) {
+            const form = input.closest('form');
+            const formData = new FormData(form);
+            
+            promises.push(
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+            );
+        }
+    });
+    
+    if (promises.length > 0) {
+        Promise.all(promises).then(() => {
+            location.reload();
+        });
+    } else {
+        // No changes made
+        toggleBulkEdit();
+    }
+}
 </script>
 {% endblock %}

@@ -166,9 +166,14 @@ def delete_item(item_name):
     return redirect(url_for('inventory'))
 
 @app.route('/update_count/<item_name>', methods=['POST'])
-@require_permission('record_counts')
+@require_login
 def update_count(item_name):
-    """Update item count (for staff users)"""
+    """Update item count (for staff users and managers)"""
+    user = get_user(session['username'])
+    if not (user.has_permission('record_counts') or user.has_permission('edit')):
+        flash('You do not have permission to update inventory counts.', 'danger')
+        return redirect(url_for('inventory'))
+    
     item = get_inventory_item(item_name)
     if not item:
         flash(f'Item "{item_name}" not found.', 'danger')
