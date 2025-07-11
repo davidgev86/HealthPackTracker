@@ -95,6 +95,7 @@ def add_item():
         quantity = int(request.form['quantity'])
         par_level = int(request.form['par_level'])
         category = request.form.get('category', 'General').strip()
+        unit_cost = float(request.form.get('unit_cost', 0.0))
         
         # Check if item already exists
         if get_inventory_item(name):
@@ -108,6 +109,7 @@ def add_item():
             quantity=quantity,
             par_level=par_level,
             category=category,
+            unit_cost=unit_cost,
             last_updated=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         )
         
@@ -136,6 +138,7 @@ def edit_item(item_name):
         item.quantity = int(request.form['quantity'])
         item.par_level = int(request.form['par_level'])
         item.category = request.form.get('category', 'General').strip()
+        item.unit_cost = float(request.form.get('unit_cost', 0.0))
         item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # Save changes
@@ -188,6 +191,10 @@ def waste_log():
         unit = request.form['unit'].strip()
         reason = request.form['reason'].strip()
         
+        # Get unit cost from inventory item
+        item = get_inventory_item(item_name)
+        unit_cost = item.unit_cost if item else 0.0
+        
         # Create waste entry
         entry = WasteEntry(
             item_name=item_name,
@@ -195,14 +202,14 @@ def waste_log():
             unit=unit,
             reason=reason,
             date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            logged_by=session['username']
+            logged_by=session['username'],
+            unit_cost=unit_cost
         )
         
         # Add to waste log
         add_waste_entry(entry)
         
         # Update inventory if item exists
-        item = get_inventory_item(item_name)
         if item:
             item.quantity = max(0, item.quantity - quantity)
             item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

@@ -30,11 +30,16 @@ class InventoryItem:
     quantity: int
     par_level: int
     category: str = 'General'
+    unit_cost: float = 0.0  # Cost per unit
     last_updated: str = ''
     
     def is_low_stock(self) -> bool:
         """Check if item is below par level"""
         return self.quantity < self.par_level
+    
+    def total_value(self) -> float:
+        """Calculate total value of current stock"""
+        return self.quantity * self.unit_cost
     
     def to_dict(self) -> dict:
         """Convert to dictionary for CSV writing"""
@@ -44,6 +49,7 @@ class InventoryItem:
             'quantity': self.quantity,
             'par_level': self.par_level,
             'category': self.category,
+            'unit_cost': self.unit_cost,
             'last_updated': self.last_updated
         }
 
@@ -55,6 +61,11 @@ class WasteEntry:
     reason: str
     date: str
     logged_by: str
+    unit_cost: float = 0.0  # Cost per unit at time of waste
+    
+    def waste_value(self) -> float:
+        """Calculate total value of wasted items"""
+        return self.quantity * self.unit_cost
     
     def to_dict(self) -> dict:
         """Convert to dictionary for CSV writing"""
@@ -64,5 +75,6 @@ class WasteEntry:
             'unit': self.unit,
             'reason': self.reason,
             'date': self.date,
-            'logged_by': self.logged_by
+            'logged_by': self.logged_by,
+            'unit_cost': self.unit_cost
         }

@@ -19,7 +19,7 @@ def initialize_csv_files():
     # Initialize inventory.csv
     if not os.path.exists(INVENTORY_FILE):
         with open(INVENTORY_FILE, 'w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=['name', 'unit', 'quantity', 'par_level', 'category', 'last_updated'])
+            writer = csv.DictWriter(file, fieldnames=['name', 'unit', 'quantity', 'par_level', 'category', 'unit_cost', 'last_updated'])
             writer.writeheader()
     
     # Initialize users.csv with default admin user
@@ -39,7 +39,7 @@ def initialize_csv_files():
     # Initialize waste_log.csv
     if not os.path.exists(WASTE_LOG_FILE):
         with open(WASTE_LOG_FILE, 'w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by'])
+            writer = csv.DictWriter(file, fieldnames=['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost'])
             writer.writeheader()
 
 def read_inventory() -> List[InventoryItem]:
@@ -55,6 +55,7 @@ def read_inventory() -> List[InventoryItem]:
                     quantity=int(row['quantity']),
                     par_level=int(row['par_level']),
                     category=row.get('category', 'General'),
+                    unit_cost=float(row.get('unit_cost', 0.0)),
                     last_updated=row.get('last_updated', '')
                 )
                 items.append(item)
@@ -65,7 +66,7 @@ def read_inventory() -> List[InventoryItem]:
 def write_inventory(items: List[InventoryItem]):
     """Write inventory items to CSV file"""
     with open(INVENTORY_FILE, 'w', newline='') as file:
-        fieldnames = ['name', 'unit', 'quantity', 'par_level', 'category', 'last_updated']
+        fieldnames = ['name', 'unit', 'quantity', 'par_level', 'category', 'unit_cost', 'last_updated']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for item in items:
@@ -145,7 +146,8 @@ def read_waste_log() -> List[WasteEntry]:
                     unit=row['unit'],
                     reason=row['reason'],
                     date=row['date'],
-                    logged_by=row['logged_by']
+                    logged_by=row['logged_by'],
+                    unit_cost=float(row.get('unit_cost', 0.0))
                 )
                 entries.append(entry)
     except FileNotFoundError:
@@ -155,7 +157,7 @@ def read_waste_log() -> List[WasteEntry]:
 def add_waste_entry(entry: WasteEntry):
     """Add a new waste log entry"""
     with open(WASTE_LOG_FILE, 'a', newline='') as file:
-        fieldnames = ['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by']
+        fieldnames = ['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(entry.to_dict())
 
@@ -170,9 +172,9 @@ def export_inventory_csv() -> str:
     if not items:
         return ""
     
-    output = "name,unit,quantity,par_level,category,last_updated\n"
+    output = "name,unit,quantity,par_level,category,unit_cost,last_updated\n"
     for item in items:
-        output += f"{item.name},{item.unit},{item.quantity},{item.par_level},{item.category},{item.last_updated}\n"
+        output += f"{item.name},{item.unit},{item.quantity},{item.par_level},{item.category},{item.unit_cost},{item.last_updated}\n"
     return output
 
 def import_inventory_csv(csv_data: str) -> tuple[bool, str]:
@@ -205,6 +207,7 @@ def import_inventory_csv(csv_data: str) -> tuple[bool, str]:
                     quantity=int(row_data['quantity']),
                     par_level=int(row_data['par_level']),
                     category=row_data.get('category', 'General').strip(),
+                    unit_cost=float(row_data.get('unit_cost', 0.0)),
                     last_updated=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 )
                 items.append(item)

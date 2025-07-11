@@ -42,7 +42,7 @@
         <div class="card bg-success text-white">
             <div class="card-body">
                 <h5 class="card-title">Total Value</h5>
-                <h3>${{ items|sum(attribute='quantity')|default(0) }}</h3>
+                <h3>${{ "%.2f"|format(items|sum(attribute='total_value')|default(0)) }}</h3>
             </div>
         </div>
     </div>
@@ -64,6 +64,8 @@
                         <th>Current Stock</th>
                         <th>Unit</th>
                         <th>Par Level</th>
+                        <th>Unit Cost</th>
+                        <th>Total Value</th>
                         <th>Status</th>
                         <th>Last Updated</th>
                         <th>Actions</th>
@@ -95,6 +97,8 @@
                         </td>
                         <td>{{ item.unit }}</td>
                         <td>{{ item.par_level }}</td>
+                        <td>${{ "%.2f"|format(item.unit_cost) }}</td>
+                        <td>${{ "%.2f"|format(item.total_value()) }}</td>
                         <td>
                             {% if item.is_low_stock() %}
                             <span class="badge bg-warning">Low Stock</span>

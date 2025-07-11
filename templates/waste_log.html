@@ -10,6 +10,26 @@
     </button>
 </div>
 
+<!-- Waste Summary Card -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">Total Waste Entries</h5>
+                <h3>{{ waste_entries|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Waste Value</h5>
+                <h3>${{ "%.2f"|format(waste_entries|sum(attribute='waste_value')|default(0)) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Waste Log Table -->
 <div class="card">
     <div class="card-header">
@@ -26,6 +46,7 @@
                         <th>Quantity</th>
                         <th>Unit</th>
                         <th>Reason</th>
+                        <th>Waste Value</th>
                         <th>Logged By</th>
                     </tr>
                 </thead>
@@ -37,6 +58,7 @@
                         <td>{{ entry.quantity }}</td>
                         <td>{{ entry.unit }}</td>
                         <td>{{ entry.reason }}</td>
+                        <td>${{ "%.2f"|format(entry.waste_value()) }}</td>
                         <td>{{ entry.logged_by }}</td>
                     </tr>
                     {% endfor %}
