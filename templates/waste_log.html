@@ -24,7 +24,7 @@
         <div class="card bg-danger text-white">
             <div class="card-body">
                 <h5 class="card-title">Total Waste Value</h5>
-                <h3>${{ "%.2f"|format(waste_entries|map('waste_value')|sum|default(0)) }}</h3>
+                <h3>${{ "%.2f"|format(total_waste_value) }}</h3>
             </div>
         </div>
     </div>

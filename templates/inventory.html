@@ -42,7 +42,7 @@
         <div class="card bg-success text-white">
             <div class="card-body">
                 <h5 class="card-title">Total Value</h5>
-                <h3>${{ "%.2f"|format(items|map('total_value')|sum|default(0)) }}</h3>
+                <h3>${{ "%.2f"|format(total_value) }}</h3>
             </div>
         </div>
     </div>

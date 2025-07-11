@@ -80,9 +80,13 @@ def inventory():
     low_stock_items = get_low_stock_items()
     user = get_user(session['username'])
     
+    # Calculate total inventory value
+    total_value = sum(item.total_value() for item in items)
+    
     return render_template('inventory.html', 
                          items=items, 
                          low_stock_count=len(low_stock_items),
+                         total_value=total_value,
                          user=user)
 
 @app.route('/add_item', methods=['GET', 'POST'])
@@ -226,10 +230,14 @@ def waste_log():
     # Convert inventory items to dict format for JavaScript
     inventory_data = [item.to_dict() for item in inventory_items]
     
+    # Calculate total waste value
+    total_waste_value = sum(entry.waste_value() for entry in waste_entries)
+    
     return render_template('waste_log.html', 
                          waste_entries=waste_entries, 
                          inventory_items=inventory_items,
                          inventory_data=inventory_data,
+                         total_waste_value=total_waste_value,
                          user=user)
 
 @app.route('/import_export', methods=['GET', 'POST'])
