@@ -1,0 +1,319 @@
+{% extends "layout.html" %}
+
+{% block title %}Weekly Waste Reports - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2"></i>Weekly Waste Reports</h2>
+    <div>
+        <a href="{{ url_for('waste_log') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Waste Log
+        </a>
+        {% if current_week_data %}
+        <form method="POST" action="{{ url_for('force_archive') }}" class="d-inline ms-2">
+            <button type="submit" class="btn btn-outline-warning" onclick="return confirm('Archive current waste log data? This will clear the current log and create a weekly report.')">
+                <i class="fas fa-archive me-2"></i>Force Archive
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Current Week Summary -->
+{% if current_week_data %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-clock me-2"></i>Current Week Summary</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>${{ "%.2f"|format(current_week_data.total_value) }}</h3>
+                        <p class="mb-0">Total Waste Value</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ current_week_data.total_entries }}</h3>
+                        <p class="mb-0">Total Entries</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ current_week_data.by_category|length }}</h3>
+                        <p class="mb-0">Categories Affected</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ current_week_data.by_reason|length }}</h3>
+                        <p class="mb-0">Waste Reasons</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>Waste by Category</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category, value in current_week_data.by_category.items() %}
+                            <tr>
+                                <td>{{ category }}</td>
+                                <td>${{ "%.2f"|format(value) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>Waste by Reason</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Reason</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reason, value in current_week_data.by_reason.items() %}
+                            <tr>
+                                <td>{{ reason }}</td>
+                                <td>${{ "%.2f"|format(value) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Week-to-Week Comparison -->
+{% if comparison_data %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-balance-scale me-2"></i>Week-to-Week Comparison</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Previous Week ({{ comparison_data.previous.week_start }} to {{ comparison_data.previous.week_end }})</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h4>${{ "%.2f"|format(comparison_data.previous.total_value) }}</h4>
+                                <p class="mb-0">Total Value</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h4>{{ comparison_data.previous.total_entries }}</h4>
+                                <p class="mb-0">Total Entries</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>Current Week ({{ comparison_data.current.week_start }} to {{ comparison_data.current.week_end }})</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h4>${{ "%.2f"|format(comparison_data.current.total_value) }}</h4>
+                                <p class="mb-0">Total Value</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h4>{{ comparison_data.current.total_entries }}</h4>
+                                <p class="mb-0">Total Entries</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h5>Change Analysis</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        <span>Value Change: </span>
+                        <span class="ms-2 fw-bold {% if comparison_data.value_change > 0 %}text-danger{% elif comparison_data.value_change < 0 %}text-success{% else %}text-muted{% endif %}">
+                            {% if comparison_data.value_change > 0 %}+{% endif %}${{ "%.2f"|format(comparison_data.value_change) }}
+                            ({{ "%.1f"|format(comparison_data.value_change_percent) }}%)
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-list-ol me-2"></i>
+                        <span>Entries Change: </span>
+                        <span class="ms-2 fw-bold {% if comparison_data.entries_change > 0 %}text-danger{% elif comparison_data.entries_change < 0 %}text-success{% else %}text-muted{% endif %}">
+                            {% if comparison_data.entries_change > 0 %}+{% endif %}{{ comparison_data.entries_change }}
+                            ({{ "%.1f"|format(comparison_data.entries_change_percent) }}%)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Historical Reports -->
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-history me-2"></i>Historical Weekly Reports</h4>
+    </div>
+    <div class="card-body">
+        {% if weekly_reports %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Week Period</th>
+                        <th>Total Entries</th>
+                        <th>Total Value</th>
+                        <th>Top Category</th>
+                        <th>Top Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in weekly_reports|reverse %}
+                    <tr>
+                        <td>{{ report.week_start }} to {{ report.week_end }}</td>
+                        <td>{{ report.total_entries }}</td>
+                        <td>${{ "%.2f"|format(report.total_value) }}</td>
+                        <td>
+                            {% if report.by_category %}
+                            {% set top_category = report.by_category|dictsort(1)|reverse|first %}
+                            {{ top_category[0] }} (${{ "%.2f"|format(top_category[1]) }})
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if report.by_reason %}
+                            {% set top_reason = report.by_reason|dictsort(1)|reverse|first %}
+                            {{ top_reason[0] }} (${{ "%.2f"|format(top_reason[1]) }})
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="toggleDetails('{{ loop.index }}')">
+                                <i class="fas fa-eye me-1"></i>Details
+                            </button>
+                        </td>
+                    </tr>
+                    <tr id="details-{{ loop.index }}" style="display: none;">
+                        <td colspan="6">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>By Category</h6>
+                                    <ul class="list-unstyled">
+                                        {% for category, value in report.by_category.items() %}
+                                        <li>{{ category }}: ${{ "%.2f"|format(value) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>By Reason</h6>
+                                    <ul class="list-unstyled">
+                                        {% for reason, value in report.by_reason.items() %}
+                                        <li>{{ reason }}: ${{ "%.2f"|format(value) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Top Items</h6>
+                                    <ul class="list-unstyled">
+                                        {% for item, value in (report.by_item.items()|sort(attribute='1', reverse=true))[:5] %}
+                                        <li>{{ item }}: ${{ "%.2f"|format(value) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No weekly reports available yet. Reports are generated automatically when waste log data is 7+ days old.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Archive Information -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h4><i class="fas fa-info-circle me-2"></i>Archive Information</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <h6><i class="fas fa-clock me-2"></i>Automatic Archival</h6>
+            <p class="mb-2">The waste log is automatically archived every 7 days. When this happens:</p>
+            <ul class="mb-2">
+                <li>Current waste log entries are moved to the archive folder</li>
+                <li>A weekly report is generated with totals and breakdowns</li>
+                <li>The waste log is cleared to start fresh</li>
+            </ul>
+            <p class="mb-0">This process ensures your data is preserved while keeping the active log manageable.</p>
+        </div>
+        
+        <div class="alert alert-warning">
+            <h6><i class="fas fa-exclamation-triangle me-2"></i>Manual Archive</h6>
+            <p class="mb-0">Use the "Force Archive" button to manually archive current data for testing or administrative purposes.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleDetails(index) {
+    const detailsRow = document.getElementById('details-' + index);
+    if (detailsRow.style.display === 'none') {
+        detailsRow.style.display = 'table-row';
+    } else {
+        detailsRow.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

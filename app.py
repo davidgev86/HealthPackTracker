@@ -9,6 +9,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 # Import routes after app creation to avoid circular imports
 from routes import *
 
-# Initialize CSV files if they don't exist
-from utils import initialize_csv_files
+# Initialize CSV files and waste archive if they don't exist
+from utils import initialize_csv_files, initialize_waste_archive
 initialize_csv_files()
+initialize_waste_archive()

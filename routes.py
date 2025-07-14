@@ -17,7 +17,9 @@ from utils import (
     filter_inventory, get_shopping_list_items,
     generate_shopping_list_pdf,
     read_categories, write_categories, get_category, add_category,
-    update_category, delete_category, get_category_names, is_category_in_use
+    update_category, delete_category, get_category_names, is_category_in_use,
+    check_and_archive_if_needed, read_weekly_reports, get_week_comparison, 
+    initialize_waste_archive
 )
 
 def require_login(f):
@@ -251,6 +253,9 @@ def update_count(item_name):
 @require_login
 def waste_log():
     """Waste logging page with full CRUD operations"""
+    # Check if we need to archive old waste data
+    if check_and_archive_if_needed():
+        flash('Waste log archived automatically (7+ days old data moved to archive).', 'info')
     if request.method == 'POST':
         action = request.form.get('action')
         
@@ -653,5 +658,79 @@ def generate_shopping_list_pdf_route():
     except Exception as e:
         flash(f'Error generating shopping list PDF: {str(e)}', 'danger')
         return redirect(url_for('inventory'))
+
+# Weekly Waste Reports Routes
+@app.route('/weekly_waste_reports')
+@require_permission('view')
+def weekly_waste_reports():
+    """Weekly waste reports and comparison page"""
+    # Initialize waste archive if needed
+    initialize_waste_archive()
+    
+    # Get weekly reports
+    weekly_reports = read_weekly_reports()
+    
+    # Get week-to-week comparison
+    current_week, previous_week = get_week_comparison()
+    
+    # Calculate comparison data
+    comparison_data = None
+    if current_week and previous_week:
+        comparison_data = {
+            'current': current_week,
+            'previous': previous_week,
+            'value_change': current_week.total_value - previous_week.total_value,
+            'entries_change': current_week.total_entries - previous_week.total_entries,
+            'value_change_percent': ((current_week.total_value - previous_week.total_value) / previous_week.total_value * 100) if previous_week.total_value > 0 else 0,
+            'entries_change_percent': ((current_week.total_entries - previous_week.total_entries) / previous_week.total_entries * 100) if previous_week.total_entries > 0 else 0
+        }
+    
+    # Get current week data (if any)
+    current_waste_entries = read_waste_log()
+    current_week_data = None
+    if current_waste_entries:
+        # Calculate current week totals
+        total_value = sum(entry.waste_value() for entry in current_waste_entries)
+        total_entries = len(current_waste_entries)
+        
+        # Group by category
+        by_category = {}
+        inventory_items = {item.name: item for item in read_inventory()}
+        for entry in current_waste_entries:
+            item = inventory_items.get(entry.item_name)
+            category = item.category if item else 'Unknown'
+            by_category[category] = by_category.get(category, 0) + entry.waste_value()
+        
+        # Group by reason
+        by_reason = {}
+        for entry in current_waste_entries:
+            by_reason[entry.reason] = by_reason.get(entry.reason, 0) + entry.waste_value()
+        
+        current_week_data = {
+            'total_value': total_value,
+            'total_entries': total_entries,
+            'by_category': by_category,
+            'by_reason': by_reason
+        }
+    
+    return render_template('weekly_waste_reports.html', 
+                         weekly_reports=weekly_reports, 
+                         comparison_data=comparison_data,
+                         current_week_data=current_week_data)
+
+@app.route('/force_archive', methods=['POST'])
+@require_permission('edit')
+def force_archive():
+    """Force archive current waste log (for testing/admin purposes)"""
+    from utils import archive_waste_log
+    
+    entries = read_waste_log()
+    if not entries:
+        flash('No waste entries to archive.', 'warning')
+    else:
+        archive_waste_log()
+        flash('Waste log archived successfully.', 'success')
+    
+    return redirect(url_for('weekly_waste_reports'))
 
 

@@ -3,10 +3,11 @@ Utility functions for CSV operations and data management.
 """
 import csv
 import os
-from datetime import datetime
-from typing import List, Optional
+import shutil
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Tuple
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, InventoryItem, WasteEntry, Vendor, Category, DEFAULT_VENDORS, DEFAULT_CATEGORIES
+from models import User, InventoryItem, WasteEntry, Vendor, Category, WeeklyWasteReport, DEFAULT_VENDORS, DEFAULT_CATEGORIES
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -19,8 +20,9 @@ INVENTORY_FILE = 'inventory.csv'
 USERS_FILE = 'users.csv'
 WASTE_LOG_FILE = 'waste_log.csv'
 VENDORS_FILE = 'vendors.csv'
-
 CATEGORIES_FILE = 'categories.csv'
+WASTE_ARCHIVE_DIR = 'waste_archive'
+WEEKLY_REPORTS_FILE = 'weekly_waste_reports.csv'
 
 def initialize_csv_files():
     """Initialize CSV files with headers if they don't exist"""
@@ -594,4 +596,148 @@ def is_category_in_use(category_name: str) -> bool:
     for item in items:
         if item.category == category_name:
             return True
+    return False
+
+# Waste Log Archival Functions
+
+def initialize_waste_archive():
+    """Initialize waste archive directory and weekly reports file"""
+    if not os.path.exists(WASTE_ARCHIVE_DIR):
+        os.makedirs(WASTE_ARCHIVE_DIR)
+    
+    if not os.path.exists(WEEKLY_REPORTS_FILE):
+        with open(WEEKLY_REPORTS_FILE, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=['week_start', 'week_end', 'total_entries', 'total_value', 'by_category', 'by_reason', 'by_item'])
+            writer.writeheader()
+
+def should_archive_waste_log() -> bool:
+    """Check if waste log should be archived (7 days old)"""
+    if not os.path.exists(WASTE_LOG_FILE):
+        return False
+    
+    # Check if file has any entries
+    entries = read_waste_log()
+    if not entries:
+        return False
+    
+    # Check if oldest entry is 7+ days old
+    oldest_entry_date = min(datetime.strptime(entry.date, '%Y-%m-%d %H:%M:%S') for entry in entries)
+    return (datetime.now() - oldest_entry_date).days >= 7
+
+def generate_weekly_report(entries: List[WasteEntry], week_start: str, week_end: str) -> WeeklyWasteReport:
+    """Generate weekly waste report from entries"""
+    total_entries = len(entries)
+    total_value = sum(entry.waste_value() for entry in entries)
+    
+    # Group by category (get category from inventory)
+    by_category = {}
+    inventory_items = {item.name: item for item in read_inventory()}
+    
+    for entry in entries:
+        item = inventory_items.get(entry.item_name)
+        category = item.category if item else 'Unknown'
+        by_category[category] = by_category.get(category, 0) + entry.waste_value()
+    
+    # Group by reason
+    by_reason = {}
+    for entry in entries:
+        by_reason[entry.reason] = by_reason.get(entry.reason, 0) + entry.waste_value()
+    
+    # Group by item
+    by_item = {}
+    for entry in entries:
+        by_item[entry.item_name] = by_item.get(entry.item_name, 0) + entry.waste_value()
+    
+    return WeeklyWasteReport(
+        week_start=week_start,
+        week_end=week_end,
+        total_entries=total_entries,
+        total_value=total_value,
+        by_category=by_category,
+        by_reason=by_reason,
+        by_item=by_item
+    )
+
+def archive_waste_log():
+    """Archive current waste log and generate weekly report"""
+    entries = read_waste_log()
+    if not entries:
+        return
+    
+    # Initialize archive if needed
+    initialize_waste_archive()
+    
+    # Determine week boundaries
+    now = datetime.now()
+    week_start = now - timedelta(days=7)
+    week_end = now
+    
+    # Generate weekly report
+    report = generate_weekly_report(entries, week_start.strftime('%Y-%m-%d'), week_end.strftime('%Y-%m-%d'))
+    
+    # Save weekly report
+    save_weekly_report(report)
+    
+    # Archive waste log file
+    archive_filename = f"waste_log_{week_start.strftime('%Y%m%d')}_{week_end.strftime('%Y%m%d')}.csv"
+    archive_path = os.path.join(WASTE_ARCHIVE_DIR, archive_filename)
+    shutil.copy2(WASTE_LOG_FILE, archive_path)
+    
+    # Clear current waste log
+    with open(WASTE_LOG_FILE, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost'])
+        writer.writeheader()
+
+def save_weekly_report(report: WeeklyWasteReport):
+    """Save weekly report to file"""
+    with open(WEEKLY_REPORTS_FILE, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['week_start', 'week_end', 'total_entries', 'total_value', 'by_category', 'by_reason', 'by_item'])
+        writer.writerow(report.to_dict())
+
+def read_weekly_reports() -> List[WeeklyWasteReport]:
+    """Read weekly waste reports from file"""
+    reports = []
+    if not os.path.exists(WEEKLY_REPORTS_FILE):
+        return reports
+    
+    try:
+        with open(WEEKLY_REPORTS_FILE, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                # Parse dictionary strings back to dicts
+                by_category = eval(row['by_category']) if row['by_category'] else {}
+                by_reason = eval(row['by_reason']) if row['by_reason'] else {}
+                by_item = eval(row['by_item']) if row['by_item'] else {}
+                
+                report = WeeklyWasteReport(
+                    week_start=row['week_start'],
+                    week_end=row['week_end'],
+                    total_entries=int(row['total_entries']),
+                    total_value=float(row['total_value']),
+                    by_category=by_category,
+                    by_reason=by_reason,
+                    by_item=by_item
+                )
+                reports.append(report)
+    except Exception:
+        pass
+    
+    return reports
+
+def get_week_comparison(weeks_back: int = 1) -> Tuple[Optional[WeeklyWasteReport], Optional[WeeklyWasteReport]]:
+    """Get comparison between current week and previous week(s)"""
+    reports = read_weekly_reports()
+    if len(reports) < weeks_back + 1:
+        return None, None
+    
+    current_report = reports[-1]
+    previous_report = reports[-(weeks_back + 1)]
+    
+    return current_report, previous_report
+
+def check_and_archive_if_needed():
+    """Check if archival is needed and perform it"""
+    if should_archive_waste_log():
+        archive_waste_log()
+        return True
     return False

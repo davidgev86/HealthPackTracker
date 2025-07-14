@@ -90,6 +90,28 @@ class WasteEntry:
         }
 
 @dataclass
+class WeeklyWasteReport:
+    week_start: str
+    week_end: str
+    total_entries: int
+    total_value: float
+    by_category: dict  # category -> total_value
+    by_reason: dict    # reason -> total_value
+    by_item: dict      # item_name -> total_value
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for CSV writing"""
+        return {
+            'week_start': self.week_start,
+            'week_end': self.week_end,
+            'total_entries': self.total_entries,
+            'total_value': self.total_value,
+            'by_category': str(self.by_category),
+            'by_reason': str(self.by_reason),
+            'by_item': str(self.by_item)
+        }
+
+@dataclass
 class Vendor:
     name: str
     contact_info: str = ''
