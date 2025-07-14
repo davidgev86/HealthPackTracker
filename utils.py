@@ -205,6 +205,49 @@ def add_waste_entry(entry: WasteEntry):
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(entry.to_dict())
 
+def write_waste_log(entries: List[WasteEntry]):
+    """Write waste log entries to CSV file"""
+    with open(WASTE_LOG_FILE, 'w', newline='') as file:
+        fieldnames = ['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for entry in entries:
+            writer.writerow(entry.to_dict())
+
+def update_waste_entry(entry_index: int, updated_entry: WasteEntry) -> bool:
+    """Update a waste log entry by index"""
+    try:
+        entries = read_waste_log()
+        if 0 <= entry_index < len(entries):
+            entries[entry_index] = updated_entry
+            write_waste_log(entries)
+            return True
+        return False
+    except Exception:
+        return False
+
+def delete_waste_entry(entry_index: int) -> bool:
+    """Delete a waste log entry by index"""
+    try:
+        entries = read_waste_log()
+        if 0 <= entry_index < len(entries):
+            entries.pop(entry_index)
+            write_waste_log(entries)
+            return True
+        return False
+    except Exception:
+        return False
+
+def get_waste_entry(entry_index: int) -> Optional[WasteEntry]:
+    """Get a specific waste log entry by index"""
+    try:
+        entries = read_waste_log()
+        if 0 <= entry_index < len(entries):
+            return entries[entry_index]
+        return None
+    except Exception:
+        return None
+
 def get_low_stock_items() -> List[InventoryItem]:
     """Get all items that are below par level"""
     items = read_inventory()
