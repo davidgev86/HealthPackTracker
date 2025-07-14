@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management - HPM Inventory</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .category-card {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: var(--bs-card-bg);
+        }
+        
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-name {
+            font-weight: bold;
+            color: var(--bs-primary);
+        }
+        
+        .category-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .usage-badge {
+            font-size: 0.8em;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .in-use {
+            background-color: var(--bs-success);
+            color: white;
+        }
+        
+        .not-in-use {
+            background-color: var(--bs-secondary);
+            color: white;
+        }
+        
+        .add-category-form {
+            background-color: var(--bs-card-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .edit-form {
+            background-color: var(--bs-light);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .edit-form.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .category-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .category-actions {
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('inventory') }}">
+                <i class="fas fa-boxes"></i>
+                HPM Inventory
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('inventory') }}">
+                    <i class="fas fa-box"></i>
+                    Inventory
+                </a>
+                <a class="nav-link" href="{{ url_for('vendors') }}">
+                    <i class="fas fa-truck"></i>
+                    Vendors
+                </a>
+                <a class="nav-link" href="{{ url_for('recipes') }}">
+                    <i class="fas fa-utensils"></i>
+                    Recipes
+                </a>
+                <a class="nav-link active" href="{{ url_for('categories') }}">
+                    <i class="fas fa-tags"></i>
+                    Categories
+                </a>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1>
+                    <i class="fas fa-tags"></i>
+                    Category Management
+                </h1>
+                <p class="text-muted">Manage inventory categories. Categories help organize your inventory items.</p>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Add Category Form -->
+        <div class="add-category-form">
+            <h3>
+                <i class="fas fa-plus"></i>
+                Add New Category
+            </h3>
+            <form method="POST">
+                <input type="hidden" name="action" value="add">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Category Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Category
+                </button>
+            </form>
+        </div>
+
+        <!-- Categories List -->
+        <div class="row">
+            <div class="col-12">
+                <h3>
+                    <i class="fas fa-list"></i>
+                    Current Categories ({{ categories|length }})
+                </h3>
+                
+                {% if categories %}
+                    {% for category in categories %}
+                        <div class="category-card">
+                            <div class="category-header">
+                                <div>
+                                    <span class="category-name">{{ category.name }}</span>
+                                    <span class="usage-badge {{ 'in-use' if category_usage[category.name] else 'not-in-use' }}">
+                                        {{ 'In Use' if category_usage[category.name] else 'Not Used' }}
+                                    </span>
+                                </div>
+                                <div class="category-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="toggleEdit('{{ category.name }}')">
+                                        <i class="fas fa-edit"></i>
+                                        Edit
+                                    </button>
+                                    {% if not category_usage[category.name] %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('{{ category.name }}')">
+                                            <i class="fas fa-trash"></i>
+                                            Delete
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-secondary" disabled title="Cannot delete category in use">
+                                            <i class="fas fa-trash"></i>
+                                            Delete
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if category.description %}
+                                <div class="text-muted mb-2">{{ category.description }}</div>
+                            {% endif %}
+                            
+                            <div class="text-muted small">
+                                Created: {{ category.created_date }}
+                            </div>
+                            
+                            <!-- Edit Form -->
+                            <div id="edit-{{ category.name }}" class="edit-form">
+                                <form method="POST">
+                                    <input type="hidden" name="action" value="edit">
+                                    <input type="hidden" name="old_name" value="{{ category.name }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Category Name *</label>
+                                                <input type="text" class="form-control" name="new_name" value="{{ category.name }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Description</label>
+                                                <input type="text" class="form-control" name="new_description" value="{{ category.description }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-save"></i>
+                                            Save Changes
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit('{{ category.name }}')">
+                                            <i class="fas fa-times"></i>
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        No categories found. Add your first category above.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the category "<span id="deleteCategoryName"></span>"?
+                    This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="category_name" id="deleteInputName">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i>
+                            Delete Category
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleEdit(categoryName) {
+            const editForm = document.getElementById('edit-' + categoryName);
+            editForm.classList.toggle('active');
+        }
+
+        function deleteCategory(categoryName) {
+            document.getElementById('deleteCategoryName').textContent = categoryName;
+            document.getElementById('deleteInputName').value = categoryName;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>

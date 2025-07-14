@@ -6,7 +6,7 @@ from datetime import datetime
 import csv
 import io
 from app import app
-from models import InventoryItem, WasteEntry, Vendor, Recipe, CATEGORIES
+from models import InventoryItem, WasteEntry, Vendor, Recipe, Category, DEFAULT_CATEGORIES
 from utils import (
     read_inventory, write_inventory, get_inventory_item, 
     update_inventory_item, delete_inventory_item,
@@ -15,7 +15,9 @@ from utils import (
     read_vendors, write_vendors, get_vendor, add_vendor,
     read_recipes, write_recipes, get_recipe, add_recipe,
     filter_inventory, get_shopping_list_items, get_recipes_using_low_stock_items,
-    generate_shopping_list_pdf, generate_meal_plan_pdf
+    generate_shopping_list_pdf, generate_meal_plan_pdf,
+    read_categories, write_categories, get_category, add_category,
+    update_category, delete_category, get_category_names, is_category_in_use
 )
 
 def require_login(f):
@@ -96,7 +98,7 @@ def inventory():
     
     # Get vendors and categories for filter dropdowns
     vendors = read_vendors()
-    categories = CATEGORIES
+    categories = get_category_names()
     
     return render_template('inventory.html', 
                          items=items, 
@@ -150,7 +152,7 @@ def add_item():
     
     # Get vendors and categories for form dropdowns
     vendors = read_vendors()
-    categories = CATEGORIES
+    categories = get_category_names()
     
     return render_template('add_item.html', vendors=vendors, categories=categories)
 
@@ -182,7 +184,7 @@ def edit_item(item_name):
     
     # Get vendors and categories for form dropdowns
     vendors = read_vendors()
-    categories = CATEGORIES
+    categories = get_category_names()
     
     return render_template('edit_item.html', item=item, vendors=vendors, categories=categories)
 
@@ -463,6 +465,80 @@ def edit_recipe(recipe_name):
         return redirect(url_for('recipes'))
     
     return render_template('edit_recipe.html', recipe=recipe)
+
+@app.route('/categories', methods=['GET', 'POST'])
+@require_permission('edit')
+def categories():
+    """Category management page"""
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add':
+            name = request.form.get('name', '').strip()
+            description = request.form.get('description', '').strip()
+            
+            if not name:
+                flash('Category name is required.', 'danger')
+                return redirect(url_for('categories'))
+            
+            new_category = Category(
+                name=name,
+                description=description,
+                created_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+            
+            if add_category(new_category):
+                flash(f'Category "{name}" added successfully.', 'success')
+            else:
+                flash(f'Category "{name}" already exists.', 'danger')
+        
+        elif action == 'edit':
+            old_name = request.form.get('old_name', '').strip()
+            new_name = request.form.get('new_name', '').strip()
+            new_description = request.form.get('new_description', '').strip()
+            
+            if not old_name or not new_name:
+                flash('Category name is required.', 'danger')
+                return redirect(url_for('categories'))
+            
+            updated_category = Category(
+                name=new_name,
+                description=new_description,
+                created_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+            
+            if update_category(old_name, updated_category):
+                flash(f'Category "{old_name}" updated successfully.', 'success')
+            else:
+                flash(f'Category "{old_name}" not found.', 'danger')
+        
+        elif action == 'delete':
+            category_name = request.form.get('category_name', '').strip()
+            
+            if not category_name:
+                flash('Category name is required.', 'danger')
+                return redirect(url_for('categories'))
+            
+            # Check if category is in use
+            if is_category_in_use(category_name):
+                flash(f'Category "{category_name}" is in use and cannot be deleted.', 'danger')
+            else:
+                if delete_category(category_name):
+                    flash(f'Category "{category_name}" deleted successfully.', 'success')
+                else:
+                    flash(f'Error deleting category "{category_name}".', 'danger')
+        
+        return redirect(url_for('categories'))
+    
+    # Get all categories
+    categories = read_categories()
+    
+    # Get usage information for each category
+    category_usage = {}
+    for category in categories:
+        category_usage[category.name] = is_category_in_use(category.name)
+    
+    return render_template('categories.html', categories=categories, category_usage=category_usage)
 
 # PDF Generation Routes
 @app.route('/generate_shopping_list_pdf')

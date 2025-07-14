@@ -128,7 +128,7 @@ class Recipe:
         }
 
 # Category constants
-CATEGORIES = [
+DEFAULT_CATEGORIES = [
     'General',
     'Produce',
     'Meat & Poultry',
@@ -143,6 +143,20 @@ CATEGORIES = [
     'Frozen Turkey Meals',
     'Frozen Seafood'
 ]
+
+@dataclass
+class Category:
+    name: str
+    description: str = ''
+    created_date: str = ''
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for CSV writing"""
+        return {
+            'name': self.name,
+            'description': self.description,
+            'created_date': self.created_date
+        }
 
 # Default vendors
 DEFAULT_VENDORS = [

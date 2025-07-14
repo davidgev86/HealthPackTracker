@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from typing import List, Optional
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, InventoryItem, WasteEntry, Vendor, Recipe, DEFAULT_VENDORS
+from models import User, InventoryItem, WasteEntry, Vendor, Recipe, Category, DEFAULT_VENDORS, DEFAULT_CATEGORIES
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -20,6 +20,7 @@ USERS_FILE = 'users.csv'
 WASTE_LOG_FILE = 'waste_log.csv'
 VENDORS_FILE = 'vendors.csv'
 RECIPES_FILE = 'recipes.csv'
+CATEGORIES_FILE = 'categories.csv'
 
 def initialize_csv_files():
     """Initialize CSV files with headers if they don't exist"""
@@ -70,6 +71,19 @@ def initialize_csv_files():
         with open(RECIPES_FILE, 'w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=['name', 'ingredients', 'meat_type', 'meat_pounds', 'servings', 'description'])
             writer.writeheader()
+    
+    # Initialize categories.csv with default categories
+    if not os.path.exists(CATEGORIES_FILE):
+        with open(CATEGORIES_FILE, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=['name', 'description', 'created_date'])
+            writer.writeheader()
+            # Add default categories
+            for category_name in DEFAULT_CATEGORIES:
+                writer.writerow({
+                    'name': category_name,
+                    'description': f'Default {category_name} category',
+                    'created_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
 
 def read_inventory() -> List[InventoryItem]:
     """Read inventory items from CSV file"""
@@ -536,3 +550,93 @@ def generate_meal_plan_pdf() -> bytes:
     pdf_bytes = buffer.getvalue()
     buffer.close()
     return pdf_bytes
+
+# Category Management Functions
+def read_categories() -> List[Category]:
+    """Read categories from CSV file"""
+    categories = []
+    try:
+        with open(CATEGORIES_FILE, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                category = Category(
+                    name=row['name'],
+                    description=row.get('description', ''),
+                    created_date=row.get('created_date', '')
+                )
+                categories.append(category)
+    except FileNotFoundError:
+        # If file doesn't exist, return default categories
+        for category_name in DEFAULT_CATEGORIES:
+            categories.append(Category(
+                name=category_name,
+                description=f'Default {category_name} category',
+                created_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            ))
+    return categories
+
+def write_categories(categories: List[Category]):
+    """Write categories to CSV file"""
+    with open(CATEGORIES_FILE, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['name', 'description', 'created_date'])
+        writer.writeheader()
+        for category in categories:
+            writer.writerow(category.to_dict())
+
+def get_category(name: str) -> Optional[Category]:
+    """Get a specific category by name"""
+    categories = read_categories()
+    for category in categories:
+        if category.name == name:
+            return category
+    return None
+
+def add_category(category: Category) -> bool:
+    """Add a new category"""
+    try:
+        categories = read_categories()
+        # Check if category already exists
+        for existing_category in categories:
+            if existing_category.name == category.name:
+                return False
+        categories.append(category)
+        write_categories(categories)
+        return True
+    except Exception:
+        return False
+
+def update_category(old_name: str, updated_category: Category) -> bool:
+    """Update an existing category"""
+    try:
+        categories = read_categories()
+        for i, category in enumerate(categories):
+            if category.name == old_name:
+                categories[i] = updated_category
+                write_categories(categories)
+                return True
+        return False
+    except Exception:
+        return False
+
+def delete_category(name: str) -> bool:
+    """Delete a category"""
+    try:
+        categories = read_categories()
+        categories = [cat for cat in categories if cat.name != name]
+        write_categories(categories)
+        return True
+    except Exception:
+        return False
+
+def get_category_names() -> List[str]:
+    """Get list of all category names"""
+    categories = read_categories()
+    return [category.name for category in categories]
+
+def is_category_in_use(category_name: str) -> bool:
+    """Check if a category is being used by any inventory items"""
+    items = read_inventory()
+    for item in items:
+        if item.category == category_name:
+            return True
+    return False
