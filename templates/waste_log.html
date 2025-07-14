@@ -270,15 +270,4 @@ document.getElementById('wasteModal').addEventListener('show.bs.modal', function
     }
 });
 </script>
-    const inventoryData = {{ inventory_data|tojson }};
-    
-    // Find matching item
-    for (let i = 0; i < inventoryItems.length; i++) {
-        if (inventoryItems[i] === itemName) {
-            document.getElementById('unit').value = inventoryData[i].unit;
-            break;
-        }
-    }
-});
-</script>
 {% endblock %}
