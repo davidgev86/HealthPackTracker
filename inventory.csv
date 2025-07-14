@@ -1,8 +1,8 @@
 name,unit,quantity,par_level,category,unit_cost,vendors,last_updated
 Chicken Breast,lbs,8,10,Meat & Poultry,2.5,Sams Club,2025-07-14 01:20:07
-Rice,lbs,15,5,Grains,0.0,,2025-07-14 00:31:08
-Olive Oil,liters,8,3,General,0.0,,2025-07-09 15:30:27
-Beef,lbs,24,10,Proteins,0.0,,2025-07-11 01:41:15
+Rice,lbs,15,5,Grains,1.25,,2025-07-14 00:31:08
+Olive Oil,liters,8,3,General,8.99,,2025-07-09 15:30:27
+Beef,lbs,24,10,Proteins,6.99,,2025-07-11 01:41:15
 Butter,lbs,2,1,dairy,0.0,,2025-07-09 15:30:27
 Green Beans,lbs,5,5,Vegatables,0.0,,2025-07-09 15:30:27
 Broccoli,lbs,6,5,Vegatables,0.0,,2025-07-09 15:30:27
