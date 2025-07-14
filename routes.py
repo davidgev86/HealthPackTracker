@@ -166,7 +166,19 @@ def edit_item(item_name):
         return redirect(url_for('inventory'))
     
     if request.method == 'POST':
+        new_name = request.form['name'].strip()
+        
+        # Check if name is being changed and if new name already exists
+        if new_name != item_name:
+            existing_item = get_inventory_item(new_name)
+            if existing_item:
+                flash(f'Item "{new_name}" already exists. Please choose a different name.', 'danger')
+                vendors = read_vendors()
+                categories = get_category_names()
+                return render_template('edit_item.html', item=item, vendors=vendors, categories=categories)
+        
         # Update item details
+        item.name = new_name
         item.unit = request.form['unit'].strip()
         item.quantity = int(request.form['quantity'])
         item.par_level = int(request.form['par_level'])
@@ -175,12 +187,23 @@ def edit_item(item_name):
         item.vendors = request.form.get('vendors', '').strip()
         item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
-        # Save changes
-        if update_inventory_item(item_name, item):
-            flash(f'Item "{item_name}" updated successfully.', 'success')
-            return redirect(url_for('inventory'))
+        # If name changed, delete old item and create new one
+        if new_name != item_name:
+            if delete_inventory_item(item_name):
+                items = read_inventory()
+                items.append(item)
+                write_inventory(items)
+                flash(f'Item renamed from "{item_name}" to "{new_name}" successfully.', 'success')
+            else:
+                flash(f'Error renaming item "{item_name}".', 'danger')
         else:
-            flash(f'Error updating item "{item_name}".', 'danger')
+            # Save changes to existing item
+            if update_inventory_item(item_name, item):
+                flash(f'Item "{item_name}" updated successfully.', 'success')
+            else:
+                flash(f'Error updating item "{item_name}".', 'danger')
+        
+        return redirect(url_for('inventory'))
     
     # Get vendors and categories for form dropdowns
     vendors = read_vendors()
