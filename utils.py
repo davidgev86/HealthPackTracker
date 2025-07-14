@@ -179,26 +179,40 @@ def read_waste_log() -> List[WasteEntry]:
         with open(WASTE_LOG_FILE, 'r', newline='') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                entry = WasteEntry(
-                    item_name=row['item_name'],
-                    quantity=int(row['quantity']),
-                    unit=row['unit'],
-                    reason=row['reason'],
-                    date=row['date'],
-                    logged_by=row['logged_by'],
-                    unit_cost=float(row.get('unit_cost', 0.0))
-                )
-                entries.append(entry)
+                try:
+                    # Clean up the unit_cost field to handle any parsing issues
+                    unit_cost_str = row.get('unit_cost', '0.0')
+                    # Extract only numeric characters and decimal point
+                    import re
+                    unit_cost_clean = re.match(r'^[\d.]+', str(unit_cost_str))
+                    unit_cost = float(unit_cost_clean.group()) if unit_cost_clean else 0.0
+                    
+                    entry = WasteEntry(
+                        item_name=row['item_name'],
+                        quantity=int(row['quantity']),
+                        unit=row['unit'],
+                        reason=row['reason'],
+                        date=row['date'],
+                        logged_by=row['logged_by'],
+                        unit_cost=unit_cost
+                    )
+                    entries.append(entry)
+                except (ValueError, KeyError) as e:
+                    # Skip malformed entries and log the error
+                    print(f"Skipping malformed waste log entry: {row}, Error: {e}")
+                    continue
     except FileNotFoundError:
         pass
     return entries
 
 def add_waste_entry(entry: WasteEntry):
     """Add a new waste log entry"""
-    with open(WASTE_LOG_FILE, 'a', newline='') as file:
-        fieldnames = ['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writerow(entry.to_dict())
+    # Read existing entries
+    entries = read_waste_log()
+    # Add new entry
+    entries.append(entry)
+    # Write all entries back to ensure proper formatting
+    write_waste_log(entries)
 
 def write_waste_log(entries: List[WasteEntry]):
     """Write waste log entries to CSV file"""

@@ -1,4 +1,3 @@
 item_name,quantity,unit,reason,date,logged_by,unit_cost
 Beef,1,lbs,Spoiled,2025-07-11 01:41:15,admin,6.99
 Chicken Breast,3,lbs,Expired,2025-07-14 01:49:59,admin,2.5
-Green Beans,1,lbs,Spoiled,2025-07-14 02:22:30,admin,0.0
