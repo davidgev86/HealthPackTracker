@@ -12,7 +12,7 @@ from utils import (
     update_inventory_item, delete_inventory_item,
     authenticate_user, get_user, read_waste_log, add_waste_entry,
     get_low_stock_items, export_inventory_csv, import_inventory_csv,
-    read_vendors, write_vendors, get_vendor, add_vendor,
+    read_vendors, write_vendors, get_vendor, add_vendor, update_vendor, delete_vendor, is_vendor_in_use,
     read_recipes, write_recipes, get_recipe, add_recipe,
     filter_inventory, get_shopping_list_items, get_recipes_using_low_stock_items,
     generate_shopping_list_pdf, generate_meal_plan_pdf,
@@ -326,12 +326,89 @@ def server_error(error):
     return render_template('layout.html', error_message="Internal server error"), 500
 
 # Vendor Management Routes
-@app.route('/vendors')
+@app.route('/vendors', methods=['GET', 'POST'])
 @require_permission('edit')
 def vendors():
     """Vendor management page"""
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add':
+            name = request.form.get('name', '').strip()
+            contact_info = request.form.get('contact_info', '').strip()
+            address = request.form.get('address', '').strip()
+            phone = request.form.get('phone', '').strip()
+            email = request.form.get('email', '').strip()
+            
+            if not name:
+                flash('Vendor name is required.', 'danger')
+                return redirect(url_for('vendors'))
+            
+            new_vendor = Vendor(
+                name=name,
+                contact_info=contact_info,
+                address=address,
+                phone=phone,
+                email=email
+            )
+            
+            if add_vendor(new_vendor):
+                flash(f'Vendor "{name}" added successfully.', 'success')
+            else:
+                flash(f'Vendor "{name}" already exists.', 'danger')
+        
+        elif action == 'edit':
+            old_name = request.form.get('old_name', '').strip()
+            new_name = request.form.get('new_name', '').strip()
+            contact_info = request.form.get('contact_info', '').strip()
+            address = request.form.get('address', '').strip()
+            phone = request.form.get('phone', '').strip()
+            email = request.form.get('email', '').strip()
+            
+            if not old_name or not new_name:
+                flash('Vendor name is required.', 'danger')
+                return redirect(url_for('vendors'))
+            
+            updated_vendor = Vendor(
+                name=new_name,
+                contact_info=contact_info,
+                address=address,
+                phone=phone,
+                email=email
+            )
+            
+            if update_vendor(old_name, updated_vendor):
+                flash(f'Vendor "{old_name}" updated successfully.', 'success')
+            else:
+                flash(f'Vendor "{old_name}" not found.', 'danger')
+        
+        elif action == 'delete':
+            vendor_name = request.form.get('vendor_name', '').strip()
+            
+            if not vendor_name:
+                flash('Vendor name is required.', 'danger')
+                return redirect(url_for('vendors'))
+            
+            # Check if vendor is in use
+            if is_vendor_in_use(vendor_name):
+                flash(f'Vendor "{vendor_name}" is in use and cannot be deleted.', 'danger')
+            else:
+                if delete_vendor(vendor_name):
+                    flash(f'Vendor "{vendor_name}" deleted successfully.', 'success')
+                else:
+                    flash(f'Error deleting vendor "{vendor_name}".', 'danger')
+        
+        return redirect(url_for('vendors'))
+    
+    # Get all vendors
     vendors = read_vendors()
-    return render_template('vendors.html', vendors=vendors)
+    
+    # Get usage information for each vendor
+    vendor_usage = {}
+    for vendor in vendors:
+        vendor_usage[vendor.name] = is_vendor_in_use(vendor.name)
+    
+    return render_template('vendors.html', vendors=vendors, vendor_usage=vendor_usage)
 
 @app.route('/add_vendor', methods=['GET', 'POST'])
 @require_permission('edit')

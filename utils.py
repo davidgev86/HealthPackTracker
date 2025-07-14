@@ -313,6 +313,37 @@ def add_vendor(vendor: Vendor) -> bool:
     write_vendors(vendors)
     return True
 
+def update_vendor(old_name: str, updated_vendor: Vendor) -> bool:
+    """Update an existing vendor"""
+    try:
+        vendors = read_vendors()
+        for i, vendor in enumerate(vendors):
+            if vendor.name == old_name:
+                vendors[i] = updated_vendor
+                write_vendors(vendors)
+                return True
+        return False
+    except Exception:
+        return False
+
+def delete_vendor(name: str) -> bool:
+    """Delete a vendor"""
+    try:
+        vendors = read_vendors()
+        vendors = [vendor for vendor in vendors if vendor.name != name]
+        write_vendors(vendors)
+        return True
+    except Exception:
+        return False
+
+def is_vendor_in_use(vendor_name: str) -> bool:
+    """Check if a vendor is being used by any inventory items"""
+    items = read_inventory()
+    for item in items:
+        if vendor_name in item.get_vendors():
+            return True
+    return False
+
 # Recipe management functions
 def read_recipes() -> List[Recipe]:
     """Read recipes from CSV file"""
