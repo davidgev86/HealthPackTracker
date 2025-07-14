@@ -1,0 +1,37 @@
+You are an AI developer on Replit updating an existing restaurant inventory-tracking application. Please implement the following feature set—do not suggest specific frameworks or tech stacks, only focus on functionality, data models, and user flows:
+
+1. **Inventory Sorting & Filtering**
+   - Add “Category” as a first-class filter/sort field.
+   - Add a “Low Stock” button that, when clicked, filters to show only items whose current quantity ≤ low-stock threshold.
+   
+2. **Shopping List PDF**
+   - Add a “Generate Shopping List” action that collects all low-stock items and produces a downloadable PDF with item names, quantities needed, and vendor info.
+
+3. **Vendor Management**
+   - Create a “Vendors” section (pre-seeded with Sams Club, Costco, Restaurant Depot, Webrestaurant, Keany Produce, H-mart).
+   - Allow each inventory item to be assigned to one or more vendors.
+   - Enable filtering/sorting inventory by vendor.
+
+4. **Extended Categories**
+   - Add these new category options to the master list:
+     - Frozen Bulk Items  
+     - Frozen Beef Meals  
+     - Frozen Chicken Meals  
+     - Frozen Turkey Meals  
+     - Frozen Seafood
+
+5. **Meal-Planner Integration**
+   - When the user clicks “Low Stock,” offer an optional “Plan Meals” view:
+     - Display a list of meals (predefined or user-defined recipes) that use low-stock ingredients.
+     - For each meal, calculate total lbs of meat required based on recipe yields and current stock.
+     - Allow exporting this meal plan summary as a PDF or CSV.
+
+6. **UI/UX Notes**
+   - Each filter or action (Category, Low Stock, Vendor) should be a clear button or dropdown.
+   - Place the “Generate Shopping List” and “Plan Meals” actions near the “Low Stock” filter.
+   - Ensure the PDF exports have a clean, printable layout.
+
+Please scaffold:
+- Data models/entities (InventoryItem, Vendor, Category, Recipe/Meal).
+- Endpoints or methods for filtering, listing, and PDF generation.
+- UI components/layouts for the new filters, vendor management, and action buttons.

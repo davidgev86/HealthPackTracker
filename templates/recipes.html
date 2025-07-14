@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}Recipes - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-utensils me-2"></i>Recipe Management</h2>
+    <a href="{{ url_for('add_recipe_route') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add Recipe
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">All Recipes</h5>
+    </div>
+    <div class="card-body">
+        {% if recipes %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Recipe Name</th>
+                        <th>Meat Type</th>
+                        <th>Meat (lbs)</th>
+                        <th>Servings</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recipe in recipes %}
+                    <tr>
+                        <td><strong>{{ recipe.name }}</strong></td>
+                        <td>
+                            {% if recipe.meat_type %}
+                            <span class="badge bg-secondary">{{ recipe.meat_type.title() }}</span>
+                            {% else %}
+                            <span class="text-muted">No meat</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ recipe.meat_pounds }}</td>
+                        <td>{{ recipe.servings }}</td>
+                        <td>{{ recipe.description[:50] }}{% if recipe.description|length > 50 %}...{% endif %}</td>
+                        <td>
+                            <a href="{{ url_for('edit_recipe', recipe_name=recipe.name) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No recipes found</h5>
+            <p class="text-muted">Get started by adding your first recipe.</p>
+            <a href="{{ url_for('add_recipe_route') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add First Recipe
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

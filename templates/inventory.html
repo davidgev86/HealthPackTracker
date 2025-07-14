@@ -5,11 +5,19 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-boxes me-2"></i>Inventory Management</h2>
-    {% if user.has_permission('edit') %}
-    <a href="{{ url_for('add_item') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Add Item
-    </a>
-    {% endif %}
+    <div class="btn-group">
+        {% if user.has_permission('edit') %}
+        <a href="{{ url_for('add_item') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Item
+        </a>
+        <a href="{{ url_for('vendors') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-truck me-2"></i>Vendors
+        </a>
+        <a href="{{ url_for('recipes') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-utensils me-2"></i>Recipes
+        </a>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Stats Cards -->
@@ -18,7 +26,7 @@
         <div class="card bg-primary text-white">
             <div class="card-body">
                 <h5 class="card-title">Total Items</h5>
-                <h3>{{ items|length }}</h3>
+                <h3>{{ all_items|length if all_items else items|length }}</h3>
             </div>
         </div>
     </div>
@@ -34,7 +42,7 @@
         <div class="card bg-info text-white">
             <div class="card-body">
                 <h5 class="card-title">Categories</h5>
-                <h3>{{ items|map(attribute='category')|unique|list|length }}</h3>
+                <h3>{{ (all_items|map(attribute='category')|unique|list|length) if all_items else (items|map(attribute='category')|unique|list|length) }}</h3>
             </div>
         </div>
     </div>
@@ -43,6 +51,71 @@
             <div class="card-body">
                 <h5 class="card-title">Total Value</h5>
                 <h3>${{ "%.2f"|format(total_value) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Controls -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filter & Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <select class="form-select" onchange="applyFilter('category', this.value)">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Vendor</label>
+                <select class="form-select" onchange="applyFilter('vendor', this.value)">
+                    <option value="">All Vendors</option>
+                    {% for vendor in vendors %}
+                    <option value="{{ vendor.name }}" {% if current_vendor == vendor.name %}selected{% endif %}>
+                        {{ vendor.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Stock Status</label>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-warning {% if low_stock_filter %}active{% endif %}" 
+                            onclick="toggleLowStockFilter()">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Actions</label>
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-success dropdown-toggle" type="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-file-pdf me-1"></i>Generate PDF
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('generate_shopping_list_pdf_route') }}">
+                                <i class="fas fa-shopping-cart me-2"></i>Shopping List</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('generate_meal_plan_pdf_route') }}">
+                                <i class="fas fa-utensils me-2"></i>Meal Plan</a></li>
+                        </ul>
+                    </div>
+                    <a href="{{ url_for('meal_planner') }}" class="btn btn-outline-info">
+                        <i class="fas fa-calendar-alt me-1"></i>Plan Meals
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -76,6 +149,7 @@
                         <th>Par Level</th>
                         <th>Unit Cost</th>
                         <th>Total Value</th>
+                        <th>Vendors</th>
                         <th>Status</th>
                         <th>Last Updated</th>
                         <th>Actions</th>
@@ -109,6 +183,15 @@
                         <td>{{ item.par_level }}</td>
                         <td>${{ "%.2f"|format(item.unit_cost) }}</td>
                         <td>${{ "%.2f"|format(item.total_value()) }}</td>
+                        <td>
+                            {% if item.vendors %}
+                                {% for vendor in item.vendors.split(',') %}
+                                    <span class="badge bg-secondary me-1">{{ vendor.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No vendors</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if item.is_low_stock() %}
                             <span class="badge bg-warning">Low Stock</span>
@@ -247,6 +330,36 @@ function saveAllChanges() {
         // No changes made
         toggleBulkEdit();
     }
+}
+
+// Filter functions
+function applyFilter(filterType, value) {
+    const url = new URL(window.location);
+    if (value) {
+        url.searchParams.set(filterType, value);
+    } else {
+        url.searchParams.delete(filterType);
+    }
+    window.location.href = url.toString();
+}
+
+function toggleLowStockFilter() {
+    const url = new URL(window.location);
+    const currentState = url.searchParams.get('low_stock') === 'true';
+    if (currentState) {
+        url.searchParams.delete('low_stock');
+    } else {
+        url.searchParams.set('low_stock', 'true');
+    }
+    window.location.href = url.toString();
+}
+
+function clearFilters() {
+    const url = new URL(window.location);
+    url.searchParams.delete('category');
+    url.searchParams.delete('vendor');
+    url.searchParams.delete('low_stock');
+    window.location.href = url.toString();
 }
 </script>
 {% endblock %}

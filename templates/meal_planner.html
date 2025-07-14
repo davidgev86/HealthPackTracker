@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+
+{% block title %}Meal Planner - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calendar-alt me-2"></i>Meal Planner</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('generate_meal_plan_pdf_route') }}" class="btn btn-success">
+            <i class="fas fa-file-pdf me-2"></i>Download PDF
+        </a>
+        <a href="{{ url_for('inventory') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Inventory
+        </a>
+    </div>
+</div>
+
+<!-- Low Stock Summary -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Low Stock Items ({{ low_stock_items|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if low_stock_items %}
+        <div class="row">
+            {% for item in low_stock_items %}
+            <div class="col-md-4 mb-2">
+                <div class="alert alert-warning d-flex justify-content-between align-items-center">
+                    <span><strong>{{ item.name }}</strong></span>
+                    <span class="badge bg-warning">{{ item.quantity }}/{{ item.par_level }} {{ item.unit }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-3">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <h6 class="text-success">All items are well stocked!</h6>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recommended Meals -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Recommended Meals Using Low Stock Ingredients</h5>
+    </div>
+    <div class="card-body">
+        {% if recipes %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Recipe Name</th>
+                        <th>Meat Type</th>
+                        <th>Meat Required (lbs)</th>
+                        <th>Servings</th>
+                        <th>Description</th>
+                        <th>Ingredients</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recipe in recipes %}
+                    <tr>
+                        <td><strong>{{ recipe.name }}</strong></td>
+                        <td>
+                            {% if recipe.meat_type %}
+                            <span class="badge bg-secondary">{{ recipe.meat_type.title() }}</span>
+                            {% else %}
+                            <span class="text-muted">No meat</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ recipe.meat_pounds }}</td>
+                        <td>{{ recipe.servings }}</td>
+                        <td>{{ recipe.description }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#ingredients-{{ loop.index }}" aria-expanded="false">
+                                <i class="fas fa-list"></i>
+                            </button>
+                            <div class="collapse mt-2" id="ingredients-{{ loop.index }}">
+                                <div class="card card-body">
+                                    {{ recipe.ingredients }}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Meat Summary -->
+        <div class="mt-4">
+            <h6>Meat Requirements Summary:</h6>
+            <div class="row">
+                {% set meat_summary = {} %}
+                {% for recipe in recipes %}
+                {% if recipe.meat_type %}
+                {% set _ = meat_summary.update({recipe.meat_type: meat_summary.get(recipe.meat_type, 0) + recipe.meat_pounds}) %}
+                {% endif %}
+                {% endfor %}
+                {% for meat_type, total_pounds in meat_summary.items() %}
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ meat_type.title() }}</h5>
+                            <h3 class="text-primary">{{ total_pounds }} lbs</h3>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No recipes use low stock ingredients</h5>
+            <p class="text-muted">Either all ingredients are well stocked or no recipes are available.</p>
+            <a href="{{ url_for('recipes') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Recipes
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

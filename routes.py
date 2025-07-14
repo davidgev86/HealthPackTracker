@@ -6,12 +6,16 @@ from datetime import datetime
 import csv
 import io
 from app import app
-from models import InventoryItem, WasteEntry
+from models import InventoryItem, WasteEntry, Vendor, Recipe, CATEGORIES
 from utils import (
     read_inventory, write_inventory, get_inventory_item, 
     update_inventory_item, delete_inventory_item,
     authenticate_user, get_user, read_waste_log, add_waste_entry,
-    get_low_stock_items, export_inventory_csv, import_inventory_csv
+    get_low_stock_items, export_inventory_csv, import_inventory_csv,
+    read_vendors, write_vendors, get_vendor, add_vendor,
+    read_recipes, write_recipes, get_recipe, add_recipe,
+    filter_inventory, get_shopping_list_items, get_recipes_using_low_stock_items,
+    generate_shopping_list_pdf, generate_meal_plan_pdf
 )
 
 def require_login(f):
@@ -75,18 +79,35 @@ def logout():
 @app.route('/inventory')
 @require_login
 def inventory():
-    """Main inventory page"""
-    items = read_inventory()
+    """Main inventory page with filtering support"""
+    # Get filter parameters
+    category_filter = request.args.get('category')
+    vendor_filter = request.args.get('vendor')
+    low_stock_filter = request.args.get('low_stock') == 'true'
+    
+    # Apply filters
+    items = filter_inventory(category=category_filter, vendor=vendor_filter, low_stock_only=low_stock_filter)
+    all_items = read_inventory()  # For totals
     low_stock_items = get_low_stock_items()
     user = get_user(session['username'])
     
     # Calculate total inventory value
-    total_value = sum(item.total_value() for item in items)
+    total_value = sum(item.total_value() for item in all_items)
+    
+    # Get vendors and categories for filter dropdowns
+    vendors = read_vendors()
+    categories = CATEGORIES
     
     return render_template('inventory.html', 
                          items=items, 
+                         all_items=all_items,
                          low_stock_count=len(low_stock_items),
                          total_value=total_value,
+                         vendors=vendors,
+                         categories=categories,
+                         current_category=category_filter,
+                         current_vendor=vendor_filter,
+                         low_stock_filter=low_stock_filter,
                          user=user)
 
 @app.route('/add_item', methods=['GET', 'POST'])
@@ -100,6 +121,7 @@ def add_item():
         par_level = int(request.form['par_level'])
         category = request.form.get('category', 'General').strip()
         unit_cost = float(request.form.get('unit_cost', 0.0))
+        vendors = request.form.get('vendors', '').strip()
         
         # Check if item already exists
         if get_inventory_item(name):
@@ -114,6 +136,7 @@ def add_item():
             par_level=par_level,
             category=category,
             unit_cost=unit_cost,
+            vendors=vendors,
             last_updated=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         )
         
@@ -125,7 +148,11 @@ def add_item():
         flash(f'Item "{name}" added successfully.', 'success')
         return redirect(url_for('inventory'))
     
-    return render_template('add_item.html')
+    # Get vendors and categories for form dropdowns
+    vendors = read_vendors()
+    categories = CATEGORIES
+    
+    return render_template('add_item.html', vendors=vendors, categories=categories)
 
 @app.route('/edit_item/<item_name>', methods=['GET', 'POST'])
 @require_permission('edit')
@@ -143,6 +170,7 @@ def edit_item(item_name):
         item.par_level = int(request.form['par_level'])
         item.category = request.form.get('category', 'General').strip()
         item.unit_cost = float(request.form.get('unit_cost', 0.0))
+        item.vendors = request.form.get('vendors', '').strip()
         item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # Save changes
@@ -152,7 +180,11 @@ def edit_item(item_name):
         else:
             flash(f'Error updating item "{item_name}".', 'danger')
     
-    return render_template('edit_item.html', item=item)
+    # Get vendors and categories for form dropdowns
+    vendors = read_vendors()
+    categories = CATEGORIES
+    
+    return render_template('edit_item.html', item=item, vendors=vendors, categories=categories)
 
 @app.route('/delete_item/<item_name>', methods=['POST'])
 @require_permission('delete')
@@ -290,3 +322,186 @@ def not_found(error):
 def server_error(error):
     """Handle 500 errors"""
     return render_template('layout.html', error_message="Internal server error"), 500
+
+# Vendor Management Routes
+@app.route('/vendors')
+@require_permission('edit')
+def vendors():
+    """Vendor management page"""
+    vendors = read_vendors()
+    return render_template('vendors.html', vendors=vendors)
+
+@app.route('/add_vendor', methods=['GET', 'POST'])
+@require_permission('edit')
+def add_vendor_route():
+    """Add new vendor"""
+    if request.method == 'POST':
+        name = request.form['name'].strip()
+        contact_info = request.form.get('contact_info', '').strip()
+        address = request.form.get('address', '').strip()
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        
+        # Check if vendor already exists
+        if get_vendor(name):
+            flash(f'Vendor "{name}" already exists.', 'danger')
+            return render_template('add_vendor.html')
+        
+        # Create new vendor
+        new_vendor = Vendor(
+            name=name,
+            contact_info=contact_info,
+            address=address,
+            phone=phone,
+            email=email
+        )
+        
+        if add_vendor(new_vendor):
+            flash(f'Vendor "{name}" added successfully.', 'success')
+            return redirect(url_for('vendors'))
+        else:
+            flash(f'Error adding vendor "{name}".', 'danger')
+    
+    return render_template('add_vendor.html')
+
+@app.route('/edit_vendor/<vendor_name>', methods=['GET', 'POST'])
+@require_permission('edit')
+def edit_vendor(vendor_name):
+    """Edit existing vendor"""
+    vendor = get_vendor(vendor_name)
+    if not vendor:
+        flash(f'Vendor "{vendor_name}" not found.', 'danger')
+        return redirect(url_for('vendors'))
+    
+    if request.method == 'POST':
+        vendor.contact_info = request.form.get('contact_info', '').strip()
+        vendor.address = request.form.get('address', '').strip()
+        vendor.phone = request.form.get('phone', '').strip()
+        vendor.email = request.form.get('email', '').strip()
+        
+        # Update vendor
+        vendors = read_vendors()
+        for i, v in enumerate(vendors):
+            if v.name == vendor_name:
+                vendors[i] = vendor
+                break
+        
+        write_vendors(vendors)
+        flash(f'Vendor "{vendor_name}" updated successfully.', 'success')
+        return redirect(url_for('vendors'))
+    
+    return render_template('edit_vendor.html', vendor=vendor)
+
+# Recipe Management Routes
+@app.route('/recipes')
+@require_permission('edit')
+def recipes():
+    """Recipe management page"""
+    recipes = read_recipes()
+    return render_template('recipes.html', recipes=recipes)
+
+@app.route('/add_recipe', methods=['GET', 'POST'])
+@require_permission('edit')
+def add_recipe_route():
+    """Add new recipe"""
+    if request.method == 'POST':
+        name = request.form['name'].strip()
+        ingredients = request.form.get('ingredients', '').strip()
+        meat_type = request.form.get('meat_type', '').strip()
+        meat_pounds = float(request.form.get('meat_pounds', 0.0))
+        servings = int(request.form.get('servings', 1))
+        description = request.form.get('description', '').strip()
+        
+        # Check if recipe already exists
+        if get_recipe(name):
+            flash(f'Recipe "{name}" already exists.', 'danger')
+            return render_template('add_recipe.html')
+        
+        # Create new recipe
+        new_recipe = Recipe(
+            name=name,
+            ingredients=ingredients,
+            meat_type=meat_type,
+            meat_pounds=meat_pounds,
+            servings=servings,
+            description=description
+        )
+        
+        if add_recipe(new_recipe):
+            flash(f'Recipe "{name}" added successfully.', 'success')
+            return redirect(url_for('recipes'))
+        else:
+            flash(f'Error adding recipe "{name}".', 'danger')
+    
+    return render_template('add_recipe.html')
+
+@app.route('/edit_recipe/<recipe_name>', methods=['GET', 'POST'])
+@require_permission('edit')
+def edit_recipe(recipe_name):
+    """Edit existing recipe"""
+    recipe = get_recipe(recipe_name)
+    if not recipe:
+        flash(f'Recipe "{recipe_name}" not found.', 'danger')
+        return redirect(url_for('recipes'))
+    
+    if request.method == 'POST':
+        recipe.ingredients = request.form.get('ingredients', '').strip()
+        recipe.meat_type = request.form.get('meat_type', '').strip()
+        recipe.meat_pounds = float(request.form.get('meat_pounds', 0.0))
+        recipe.servings = int(request.form.get('servings', 1))
+        recipe.description = request.form.get('description', '').strip()
+        
+        # Update recipe
+        recipes = read_recipes()
+        for i, r in enumerate(recipes):
+            if r.name == recipe_name:
+                recipes[i] = recipe
+                break
+        
+        write_recipes(recipes)
+        flash(f'Recipe "{recipe_name}" updated successfully.', 'success')
+        return redirect(url_for('recipes'))
+    
+    return render_template('edit_recipe.html', recipe=recipe)
+
+# PDF Generation Routes
+@app.route('/generate_shopping_list_pdf')
+@require_permission('view')
+def generate_shopping_list_pdf_route():
+    """Generate shopping list PDF"""
+    try:
+        pdf_bytes = generate_shopping_list_pdf()
+        
+        response = make_response(pdf_bytes)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename="shopping_list_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        return response
+    except Exception as e:
+        flash(f'Error generating shopping list PDF: {str(e)}', 'danger')
+        return redirect(url_for('inventory'))
+
+@app.route('/generate_meal_plan_pdf')
+@require_permission('view')
+def generate_meal_plan_pdf_route():
+    """Generate meal plan PDF"""
+    try:
+        pdf_bytes = generate_meal_plan_pdf()
+        
+        response = make_response(pdf_bytes)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename="meal_plan_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        return response
+    except Exception as e:
+        flash(f'Error generating meal plan PDF: {str(e)}', 'danger')
+        return redirect(url_for('inventory'))
+
+@app.route('/meal_planner')
+@require_permission('view')
+def meal_planner():
+    """Meal planner page showing recipes for low stock items"""
+    recipes = get_recipes_using_low_stock_items()
+    low_stock_items = get_shopping_list_items()
+    
+    return render_template('meal_planner.html', 
+                         recipes=recipes, 
+                         low_stock_items=low_stock_items)

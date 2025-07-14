@@ -23,15 +23,9 @@
                             <div class="mb-3">
                                 <label for="category" class="form-label">Category</label>
                                 <select class="form-select" id="category" name="category">
-                                    <option value="General" {% if item.category == 'General' %}selected{% endif %}>General</option>
-                                    <option value="Proteins" {% if item.category == 'Proteins' %}selected{% endif %}>Proteins</option>
-                                    <option value="Vegetables" {% if item.category == 'Vegetables' %}selected{% endif %}>Vegetables</option>
-                                    <option value="Grains" {% if item.category == 'Grains' %}selected{% endif %}>Grains</option>
-                                    <option value="Dairy" {% if item.category == 'Dairy' %}selected{% endif %}>Dairy</option>
-                                    <option value="Spices" {% if item.category == 'Spices' %}selected{% endif %}>Spices</option>
-                                    <option value="Beverages" {% if item.category == 'Beverages' %}selected{% endif %}>Beverages</option>
-                                    <option value="Packaging" {% if item.category == 'Packaging' %}selected{% endif %}>Packaging</option>
-                                    <option value="Cleaning" {% if item.category == 'Cleaning' %}selected{% endif %}>Cleaning</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category }}" {% if item.category == category %}selected{% endif %}>{{ category }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -78,7 +72,18 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="vendors" class="form-label">Vendors</label>
+                                <select class="form-select" id="vendors" name="vendors" multiple>
+                                    {% for vendor in vendors %}
+                                    <option value="{{ vendor.name }}" {% if vendor.name in item.vendors %}selected{% endif %}>{{ vendor.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple vendors</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="alert alert-{% if item.is_low_stock() %}warning{% else %}success{% endif %}">
                                 <i class="fas fa-{% if item.is_low_stock() %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>
                                 <strong>Current Status:</strong> 

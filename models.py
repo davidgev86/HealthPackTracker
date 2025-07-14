@@ -31,15 +31,24 @@ class InventoryItem:
     par_level: int
     category: str = 'General'
     unit_cost: float = 0.0  # Cost per unit
+    vendors: str = ''  # Comma-separated vendor names
     last_updated: str = ''
     
     def is_low_stock(self) -> bool:
         """Check if item is below par level"""
-        return self.quantity < self.par_level
+        return self.quantity <= self.par_level
     
     def total_value(self) -> float:
         """Calculate total value of current stock"""
         return self.quantity * self.unit_cost
+    
+    def get_vendors(self) -> List[str]:
+        """Get list of vendors for this item"""
+        return [v.strip() for v in self.vendors.split(',') if v.strip()]
+    
+    def quantity_needed(self) -> int:
+        """Calculate quantity needed to reach par level"""
+        return max(0, self.par_level - self.quantity)
     
     def to_dict(self) -> dict:
         """Convert to dictionary for CSV writing"""
@@ -50,6 +59,7 @@ class InventoryItem:
             'par_level': self.par_level,
             'category': self.category,
             'unit_cost': self.unit_cost,
+            'vendors': self.vendors,
             'last_updated': self.last_updated
         }
 
@@ -78,3 +88,68 @@ class WasteEntry:
             'logged_by': self.logged_by,
             'unit_cost': self.unit_cost
         }
+
+@dataclass
+class Vendor:
+    name: str
+    contact_info: str = ''
+    address: str = ''
+    phone: str = ''
+    email: str = ''
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for CSV writing"""
+        return {
+            'name': self.name,
+            'contact_info': self.contact_info,
+            'address': self.address,
+            'phone': self.phone,
+            'email': self.email
+        }
+
+@dataclass
+class Recipe:
+    name: str
+    ingredients: str  # JSON string of ingredient requirements
+    meat_type: str = ''  # beef, chicken, turkey, seafood
+    meat_pounds: float = 0.0  # pounds of meat required
+    servings: int = 1
+    description: str = ''
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for CSV writing"""
+        return {
+            'name': self.name,
+            'ingredients': self.ingredients,
+            'meat_type': self.meat_type,
+            'meat_pounds': self.meat_pounds,
+            'servings': self.servings,
+            'description': self.description
+        }
+
+# Category constants
+CATEGORIES = [
+    'General',
+    'Produce',
+    'Meat & Poultry',
+    'Dairy',
+    'Pantry',
+    'Beverages',
+    'Frozen',
+    'Cleaning Supplies',
+    'Frozen Bulk Items',
+    'Frozen Beef Meals',
+    'Frozen Chicken Meals',
+    'Frozen Turkey Meals',
+    'Frozen Seafood'
+]
+
+# Default vendors
+DEFAULT_VENDORS = [
+    'Sams Club',
+    'Costco',
+    'Restaurant Depot',
+    'Webrestaurant',
+    'Keany Produce',
+    'H-mart'
+]

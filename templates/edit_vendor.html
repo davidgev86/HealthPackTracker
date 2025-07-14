@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Vendor - HPM Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit me-2"></i>Edit Vendor: {{ vendor.name }}</h2>
+    <a href="{{ url_for('vendors') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Vendors
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Vendor Information</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Vendor Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ vendor.name }}" readonly>
+                        <div class="form-text">Vendor name cannot be changed</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="contact_info" class="form-label">Contact Info</label>
+                        <input type="text" class="form-control" id="contact_info" name="contact_info" value="{{ vendor.contact_info }}" placeholder="Main contact person">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ vendor.phone }}" placeholder="(555) 123-4567">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ vendor.email }}" placeholder="contact@vendor.com">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <textarea class="form-control" id="address" name="address" rows="3" placeholder="Full address">{{ vendor.address }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Update Vendor
+                </button>
+                <a href="{{ url_for('vendors') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
