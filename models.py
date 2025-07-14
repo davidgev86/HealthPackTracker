@@ -107,25 +107,7 @@ class Vendor:
             'email': self.email
         }
 
-@dataclass
-class Recipe:
-    name: str
-    ingredients: str  # JSON string of ingredient requirements
-    meat_type: str = ''  # beef, chicken, turkey, seafood
-    meat_pounds: float = 0.0  # pounds of meat required
-    servings: int = 1
-    description: str = ''
-    
-    def to_dict(self) -> dict:
-        """Convert to dictionary for CSV writing"""
-        return {
-            'name': self.name,
-            'ingredients': self.ingredients,
-            'meat_type': self.meat_type,
-            'meat_pounds': self.meat_pounds,
-            'servings': self.servings,
-            'description': self.description
-        }
+
 
 # Category constants
 DEFAULT_CATEGORIES = [

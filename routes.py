@@ -6,7 +6,7 @@ from datetime import datetime
 import csv
 import io
 from app import app
-from models import InventoryItem, WasteEntry, Vendor, Recipe, Category, DEFAULT_CATEGORIES
+from models import InventoryItem, WasteEntry, Vendor, Category, DEFAULT_CATEGORIES
 from utils import (
     read_inventory, write_inventory, get_inventory_item, 
     update_inventory_item, delete_inventory_item,
@@ -14,9 +14,8 @@ from utils import (
     write_waste_log, update_waste_entry, delete_waste_entry, get_waste_entry,
     get_low_stock_items, export_inventory_csv, import_inventory_csv,
     read_vendors, write_vendors, get_vendor, add_vendor, update_vendor, delete_vendor, is_vendor_in_use,
-    read_recipes, write_recipes, get_recipe, add_recipe,
-    filter_inventory, get_shopping_list_items, get_recipes_using_low_stock_items,
-    generate_shopping_list_pdf, generate_meal_plan_pdf,
+    filter_inventory, get_shopping_list_items,
+    generate_shopping_list_pdf,
     read_categories, write_categories, get_category, add_category,
     update_category, delete_category, get_category_names, is_category_in_use
 )
@@ -540,77 +539,7 @@ def edit_vendor(vendor_name):
     
     return render_template('edit_vendor.html', vendor=vendor)
 
-# Recipe Management Routes
-@app.route('/recipes')
-@require_permission('edit')
-def recipes():
-    """Recipe management page"""
-    recipes = read_recipes()
-    return render_template('recipes.html', recipes=recipes)
 
-@app.route('/add_recipe', methods=['GET', 'POST'])
-@require_permission('edit')
-def add_recipe_route():
-    """Add new recipe"""
-    if request.method == 'POST':
-        name = request.form['name'].strip()
-        ingredients = request.form.get('ingredients', '').strip()
-        meat_type = request.form.get('meat_type', '').strip()
-        meat_pounds = float(request.form.get('meat_pounds', 0.0))
-        servings = int(request.form.get('servings', 1))
-        description = request.form.get('description', '').strip()
-        
-        # Check if recipe already exists
-        if get_recipe(name):
-            flash(f'Recipe "{name}" already exists.', 'danger')
-            return render_template('add_recipe.html')
-        
-        # Create new recipe
-        new_recipe = Recipe(
-            name=name,
-            ingredients=ingredients,
-            meat_type=meat_type,
-            meat_pounds=meat_pounds,
-            servings=servings,
-            description=description
-        )
-        
-        if add_recipe(new_recipe):
-            flash(f'Recipe "{name}" added successfully.', 'success')
-            return redirect(url_for('recipes'))
-        else:
-            flash(f'Error adding recipe "{name}".', 'danger')
-    
-    return render_template('add_recipe.html')
-
-@app.route('/edit_recipe/<recipe_name>', methods=['GET', 'POST'])
-@require_permission('edit')
-def edit_recipe(recipe_name):
-    """Edit existing recipe"""
-    recipe = get_recipe(recipe_name)
-    if not recipe:
-        flash(f'Recipe "{recipe_name}" not found.', 'danger')
-        return redirect(url_for('recipes'))
-    
-    if request.method == 'POST':
-        recipe.ingredients = request.form.get('ingredients', '').strip()
-        recipe.meat_type = request.form.get('meat_type', '').strip()
-        recipe.meat_pounds = float(request.form.get('meat_pounds', 0.0))
-        recipe.servings = int(request.form.get('servings', 1))
-        recipe.description = request.form.get('description', '').strip()
-        
-        # Update recipe
-        recipes = read_recipes()
-        for i, r in enumerate(recipes):
-            if r.name == recipe_name:
-                recipes[i] = recipe
-                break
-        
-        write_recipes(recipes)
-        flash(f'Recipe "{recipe_name}" updated successfully.', 'success')
-        return redirect(url_for('recipes'))
-    
-    return render_template('edit_recipe.html', recipe=recipe)
 
 @app.route('/categories', methods=['GET', 'POST'])
 @require_permission('edit')
@@ -702,28 +631,4 @@ def generate_shopping_list_pdf_route():
         flash(f'Error generating shopping list PDF: {str(e)}', 'danger')
         return redirect(url_for('inventory'))
 
-@app.route('/generate_meal_plan_pdf')
-@require_permission('view')
-def generate_meal_plan_pdf_route():
-    """Generate meal plan PDF"""
-    try:
-        pdf_bytes = generate_meal_plan_pdf()
-        
-        response = make_response(pdf_bytes)
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = f'attachment; filename="meal_plan_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
-        return response
-    except Exception as e:
-        flash(f'Error generating meal plan PDF: {str(e)}', 'danger')
-        return redirect(url_for('inventory'))
 
-@app.route('/meal_planner')
-@require_permission('view')
-def meal_planner():
-    """Meal planner page showing recipes for low stock items"""
-    recipes = get_recipes_using_low_stock_items()
-    low_stock_items = get_shopping_list_items()
-    
-    return render_template('meal_planner.html', 
-                         recipes=recipes, 
-                         low_stock_items=low_stock_items)

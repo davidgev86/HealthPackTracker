@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from typing import List, Optional
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, InventoryItem, WasteEntry, Vendor, Recipe, Category, DEFAULT_VENDORS, DEFAULT_CATEGORIES
+from models import User, InventoryItem, WasteEntry, Vendor, Category, DEFAULT_VENDORS, DEFAULT_CATEGORIES
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -19,7 +19,7 @@ INVENTORY_FILE = 'inventory.csv'
 USERS_FILE = 'users.csv'
 WASTE_LOG_FILE = 'waste_log.csv'
 VENDORS_FILE = 'vendors.csv'
-RECIPES_FILE = 'recipes.csv'
+
 CATEGORIES_FILE = 'categories.csv'
 
 def initialize_csv_files():
@@ -66,12 +66,7 @@ def initialize_csv_files():
                 }
                 writer.writerow(vendor)
     
-    # Initialize recipes.csv
-    if not os.path.exists(RECIPES_FILE):
-        with open(RECIPES_FILE, 'w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=['name', 'ingredients', 'meat_type', 'meat_pounds', 'servings', 'description'])
-            writer.writeheader()
-    
+
     # Initialize categories.csv with default categories
     if not os.path.exists(CATEGORIES_FILE):
         with open(CATEGORIES_FILE, 'w', newline='') as file:
@@ -387,53 +382,7 @@ def is_vendor_in_use(vendor_name: str) -> bool:
             return True
     return False
 
-# Recipe management functions
-def read_recipes() -> List[Recipe]:
-    """Read recipes from CSV file"""
-    recipes = []
-    try:
-        with open(RECIPES_FILE, 'r', newline='') as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                recipe = Recipe(
-                    name=row['name'],
-                    ingredients=row['ingredients'],
-                    meat_type=row.get('meat_type', ''),
-                    meat_pounds=float(row.get('meat_pounds', 0.0)),
-                    servings=int(row.get('servings', 1)),
-                    description=row.get('description', '')
-                )
-                recipes.append(recipe)
-    except FileNotFoundError:
-        pass
-    return recipes
 
-def write_recipes(recipes: List[Recipe]):
-    """Write recipes to CSV file"""
-    with open(RECIPES_FILE, 'w', newline='') as file:
-        fieldnames = ['name', 'ingredients', 'meat_type', 'meat_pounds', 'servings', 'description']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for recipe in recipes:
-            writer.writerow(recipe.to_dict())
-
-def get_recipe(name: str) -> Optional[Recipe]:
-    """Get a specific recipe by name"""
-    recipes = read_recipes()
-    for recipe in recipes:
-        if recipe.name == name:
-            return recipe
-    return None
-
-def add_recipe(recipe: Recipe) -> bool:
-    """Add a new recipe"""
-    recipes = read_recipes()
-    # Check if recipe already exists
-    if any(r.name == recipe.name for r in recipes):
-        return False
-    recipes.append(recipe)
-    write_recipes(recipes)
-    return True
 
 # Filtering and search functions
 def filter_inventory(category: str = None, vendor: str = None, low_stock_only: bool = False) -> List[InventoryItem]:
@@ -455,21 +404,7 @@ def get_shopping_list_items() -> List[InventoryItem]:
     """Get items that need to be restocked (low stock items)"""
     return filter_inventory(low_stock_only=True)
 
-def get_recipes_using_low_stock_items() -> List[Recipe]:
-    """Get recipes that use low stock ingredients"""
-    low_stock_items = get_shopping_list_items()
-    low_stock_names = [item.name.lower() for item in low_stock_items]
-    
-    recipes = read_recipes()
-    matching_recipes = []
-    
-    for recipe in recipes:
-        # Simple check if any low stock item is mentioned in ingredients
-        ingredients_lower = recipe.ingredients.lower()
-        if any(item_name in ingredients_lower for item_name in low_stock_names):
-            matching_recipes.append(recipe)
-    
-    return matching_recipes
+
 
 # PDF generation functions
 def generate_shopping_list_pdf() -> bytes:
@@ -555,75 +490,7 @@ def generate_shopping_list_pdf() -> bytes:
     buffer.close()
     return pdf_bytes
 
-def generate_meal_plan_pdf() -> bytes:
-    """Generate meal plan PDF for recipes using low stock ingredients"""
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    styles = getSampleStyleSheet()
-    story = []
-    
-    # Title
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=18,
-        spaceAfter=30,
-        textColor=colors.darkblue
-    )
-    story.append(Paragraph("Health Pack Meals - Meal Plan", title_style))
-    story.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
-    story.append(Spacer(1, 20))
-    
-    # Get recipes using low stock items
-    recipes = get_recipes_using_low_stock_items()
-    low_stock_items = get_shopping_list_items()
-    
-    if not recipes:
-        story.append(Paragraph("No meal recipes found using low stock ingredients.", styles['Normal']))
-    else:
-        story.append(Paragraph("Recommended Meals Using Low Stock Ingredients:", styles['Heading2']))
-        story.append(Spacer(1, 10))
-        
-        # Create table
-        table_data = [['Meal Name', 'Meat Type', 'Meat Required (lbs)', 'Servings', 'Description']]
-        
-        for recipe in recipes:
-            table_data.append([
-                recipe.name,
-                recipe.meat_type.title() if recipe.meat_type else 'N/A',
-                str(recipe.meat_pounds),
-                str(recipe.servings),
-                recipe.description[:50] + '...' if len(recipe.description) > 50 else recipe.description
-            ])
-        
-        # Create table
-        table = Table(table_data, colWidths=[2*inch, 1*inch, 1*inch, 0.8*inch, 2.2*inch])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP')
-        ]))
-        
-        story.append(table)
-        story.append(Spacer(1, 20))
-        
-        # Add low stock items summary
-        story.append(Paragraph("Low Stock Items Summary:", styles['Heading2']))
-        story.append(Spacer(1, 10))
-        
-        for item in low_stock_items:
-            story.append(Paragraph(f"• {item.name}: {item.quantity} {item.unit} (Par Level: {item.par_level})", styles['Normal']))
-    
-    doc.build(story)
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
-    return pdf_bytes
+
 
 # Category Management Functions
 def read_categories() -> List[Category]:

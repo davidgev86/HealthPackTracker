@@ -112,6 +112,8 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 14, 2025. Updated waste log with full CRUD capabilities and modern card-based interface
+- July 14, 2025. Removed meal planner and recipes functionality per user request
 - July 08, 2025. Created standalone desktop application version
 - July 07, 2025. Initial setup
 
