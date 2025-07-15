@@ -191,7 +191,7 @@ def read_waste_log() -> List[WasteEntry]:
                     
                     entry = WasteEntry(
                         item_name=row['item_name'],
-                        quantity=int(row['quantity']),
+                        quantity=float(row['quantity']),
                         unit=row['unit'],
                         reason=row['reason'],
                         date=row['date'],

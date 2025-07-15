@@ -66,7 +66,7 @@ class InventoryItem:
 @dataclass
 class WasteEntry:
     item_name: str
-    quantity: int
+    quantity: float
     unit: str
     reason: str
     date: str

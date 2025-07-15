@@ -266,7 +266,7 @@ def waste_log():
         if action == 'add':
             try:
                 item_name = request.form['item_name'].strip()
-                quantity = int(request.form['quantity'])
+                quantity = float(request.form['quantity'])
                 unit = request.form['unit'].strip()
                 reason = request.form['reason'].strip()
                 
@@ -302,7 +302,7 @@ def waste_log():
             try:
                 entry_index = int(request.form.get('entry_index', -1))
                 item_name = request.form['item_name'].strip()
-                quantity = int(request.form['quantity'])
+                quantity = float(request.form['quantity'])
                 unit = request.form['unit'].strip()
                 reason = request.form['reason'].strip()
                 
