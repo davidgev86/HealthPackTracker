@@ -119,6 +119,9 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 15, 2025. Added weekly inventory cost tracking system with WeeklyInventoryReport model for spending analysis
+- July 15, 2025. Enhanced weekly waste reports page to include inventory cost tracking with week-to-week comparisons
+- July 15, 2025. Implemented automated weekly inventory report generation every 7 days (excluding HPM items)
 - July 15, 2025. Created dedicated HPM Items page with isolated inventory management and waste logging for HPM vendor items
 - July 15, 2025. Added vendor exclusion feature for shopping lists with checkbox controls in vendor management
 - July 15, 2025. Made all page headers consistent throughout the application to match homepage design

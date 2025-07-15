@@ -7,7 +7,7 @@ import shutil
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Tuple
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, InventoryItem, WasteEntry, Vendor, Category, WeeklyWasteReport, DEFAULT_VENDORS, DEFAULT_CATEGORIES
+from models import User, InventoryItem, WasteEntry, Vendor, Category, WeeklyWasteReport, WeeklyInventoryReport, DEFAULT_VENDORS, DEFAULT_CATEGORIES
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -23,6 +23,7 @@ VENDORS_FILE = 'vendors.csv'
 CATEGORIES_FILE = 'categories.csv'
 WASTE_ARCHIVE_DIR = 'waste_archive'
 WEEKLY_REPORTS_FILE = 'weekly_waste_reports.csv'
+WEEKLY_INVENTORY_REPORTS_FILE = 'weekly_inventory_reports.csv'
 
 def initialize_csv_files():
     """Initialize CSV files with headers if they don't exist"""
@@ -81,6 +82,12 @@ def initialize_csv_files():
                     'description': f'Default {category_name} category',
                     'created_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 })
+    
+    # Initialize weekly reports
+    initialize_waste_archive()
+    
+    # Initialize weekly inventory reports
+    initialize_weekly_inventory_reports()
 
 def read_inventory() -> List[InventoryItem]:
     """Read inventory items from CSV file"""
@@ -782,4 +789,127 @@ def check_and_archive_if_needed():
         return False
     except Exception:
         # If archival fails, don't break the application
+        return False
+
+# Weekly Inventory Tracking Functions
+def initialize_weekly_inventory_reports():
+    """Initialize weekly inventory reports file"""
+    if not os.path.exists(WEEKLY_INVENTORY_REPORTS_FILE):
+        with open(WEEKLY_INVENTORY_REPORTS_FILE, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=['week_start', 'week_end', 'total_items', 'total_value', 'by_category', 'by_vendor', 'low_stock_items', 'generated_date'])
+            writer.writeheader()
+
+def should_generate_weekly_inventory_report() -> bool:
+    """Check if it's time to generate a weekly inventory report (every 7 days)"""
+    reports = read_weekly_inventory_reports()
+    if not reports:
+        return True
+    
+    last_report = reports[-1]
+    last_date = datetime.strptime(last_report.week_end, '%Y-%m-%d')
+    current_date = datetime.now()
+    
+    return (current_date - last_date).days >= 7
+
+def generate_weekly_inventory_report() -> WeeklyInventoryReport:
+    """Generate weekly inventory report from current inventory (excluding HPM items)"""
+    current_date = datetime.now()
+    week_start = (current_date - timedelta(days=current_date.weekday())).strftime('%Y-%m-%d')
+    week_end = (current_date + timedelta(days=6-current_date.weekday())).strftime('%Y-%m-%d')
+    
+    # Get all inventory items excluding HPM items
+    all_items = read_inventory()
+    non_hpm_items = [item for item in all_items if 'HPM' not in item.get_vendors()]
+    
+    # Calculate totals
+    total_items = len(non_hpm_items)
+    total_value = sum(item.total_value() for item in non_hpm_items)
+    low_stock_items = len([item for item in non_hpm_items if item.is_low_stock()])
+    
+    # Group by category
+    by_category = {}
+    for item in non_hpm_items:
+        category = item.category
+        if category not in by_category:
+            by_category[category] = 0
+        by_category[category] += item.total_value()
+    
+    # Group by vendor
+    by_vendor = {}
+    for item in non_hpm_items:
+        vendors = item.get_vendors() if item.get_vendors() else ['No Vendor']
+        for vendor in vendors:
+            if vendor not in by_vendor:
+                by_vendor[vendor] = 0
+            by_vendor[vendor] += item.total_value() / len(vendors)  # Split value across vendors
+    
+    return WeeklyInventoryReport(
+        week_start=week_start,
+        week_end=week_end,
+        total_items=total_items,
+        total_value=total_value,
+        by_category=by_category,
+        by_vendor=by_vendor,
+        low_stock_items=low_stock_items,
+        generated_date=current_date.strftime('%Y-%m-%d %H:%M:%S')
+    )
+
+def save_weekly_inventory_report(report: WeeklyInventoryReport):
+    """Save weekly inventory report to file"""
+    initialize_weekly_inventory_reports()
+    with open(WEEKLY_INVENTORY_REPORTS_FILE, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['week_start', 'week_end', 'total_items', 'total_value', 'by_category', 'by_vendor', 'low_stock_items', 'generated_date'])
+        writer.writerow(report.to_dict())
+
+def read_weekly_inventory_reports() -> List[WeeklyInventoryReport]:
+    """Read weekly inventory reports from file"""
+    reports = []
+    if not os.path.exists(WEEKLY_INVENTORY_REPORTS_FILE):
+        return reports
+    
+    try:
+        with open(WEEKLY_INVENTORY_REPORTS_FILE, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                # Parse dictionary strings back to dicts
+                by_category = eval(row['by_category']) if row['by_category'] else {}
+                by_vendor = eval(row['by_vendor']) if row['by_vendor'] else {}
+                
+                report = WeeklyInventoryReport(
+                    week_start=row['week_start'],
+                    week_end=row['week_end'],
+                    total_items=int(row['total_items']),
+                    total_value=float(row['total_value']),
+                    by_category=by_category,
+                    by_vendor=by_vendor,
+                    low_stock_items=int(row['low_stock_items']),
+                    generated_date=row['generated_date']
+                )
+                reports.append(report)
+    except Exception:
+        pass
+    
+    return reports
+
+def get_inventory_week_comparison(weeks_back: int = 1) -> Tuple[Optional[WeeklyInventoryReport], Optional[WeeklyInventoryReport]]:
+    """Get comparison between current week and previous week(s) inventory reports"""
+    reports = read_weekly_inventory_reports()
+    if len(reports) < weeks_back + 1:
+        return None, None
+    
+    current_report = reports[-1]
+    previous_report = reports[-(weeks_back + 1)]
+    
+    return current_report, previous_report
+
+def check_and_generate_inventory_report_if_needed():
+    """Check if inventory report generation is needed and perform it"""
+    try:
+        if should_generate_weekly_inventory_report():
+            report = generate_weekly_inventory_report()
+            save_weekly_inventory_report(report)
+            return True
+        return False
+    except Exception:
+        # If report generation fails, don't break the application
         return False

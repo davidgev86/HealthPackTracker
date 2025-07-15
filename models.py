@@ -112,6 +112,30 @@ class WeeklyWasteReport:
         }
 
 @dataclass
+class WeeklyInventoryReport:
+    week_start: str
+    week_end: str
+    total_items: int
+    total_value: float
+    by_category: dict  # category -> total_value
+    by_vendor: dict    # vendor -> total_value
+    low_stock_items: int
+    generated_date: str
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for CSV writing"""
+        return {
+            'week_start': self.week_start,
+            'week_end': self.week_end,
+            'total_items': self.total_items,
+            'total_value': self.total_value,
+            'by_category': str(self.by_category),
+            'by_vendor': str(self.by_vendor),
+            'low_stock_items': self.low_stock_items,
+            'generated_date': self.generated_date
+        }
+
+@dataclass
 class Vendor:
     name: str
     contact_info: str = ''

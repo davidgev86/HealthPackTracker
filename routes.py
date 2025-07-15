@@ -696,6 +696,10 @@ def weekly_waste_reports():
     # Initialize waste archive if needed
     initialize_waste_archive()
     
+    # Check and generate inventory report if needed
+    from utils import check_and_generate_inventory_report_if_needed, read_weekly_inventory_reports, get_inventory_week_comparison
+    check_and_generate_inventory_report_if_needed()
+    
     # Get weekly reports
     weekly_reports = read_weekly_reports()
     
@@ -712,6 +716,24 @@ def weekly_waste_reports():
             'entries_change': current_week.total_entries - previous_week.total_entries,
             'value_change_percent': ((current_week.total_value - previous_week.total_value) / previous_week.total_value * 100) if previous_week.total_value > 0 else 0,
             'entries_change_percent': ((current_week.total_entries - previous_week.total_entries) / previous_week.total_entries * 100) if previous_week.total_entries > 0 else 0
+        }
+    
+    # Get inventory weekly reports
+    inventory_reports = read_weekly_inventory_reports()
+    
+    # Get inventory week-to-week comparison
+    current_inventory_week, previous_inventory_week = get_inventory_week_comparison()
+    
+    # Calculate inventory comparison data
+    inventory_comparison_data = None
+    if current_inventory_week and previous_inventory_week:
+        inventory_comparison_data = {
+            'current': current_inventory_week,
+            'previous': previous_inventory_week,
+            'value_change': current_inventory_week.total_value - previous_inventory_week.total_value,
+            'items_change': current_inventory_week.total_items - previous_inventory_week.total_items,
+            'value_change_percent': ((current_inventory_week.total_value - previous_inventory_week.total_value) / previous_inventory_week.total_value * 100) if previous_inventory_week.total_value > 0 else 0,
+            'items_change_percent': ((current_inventory_week.total_items - previous_inventory_week.total_items) / previous_inventory_week.total_items * 100) if previous_inventory_week.total_items > 0 else 0
         }
     
     # Get current week data (if any) - exclude HPM items
@@ -748,7 +770,9 @@ def weekly_waste_reports():
     return render_template('weekly_waste_reports.html', 
                          weekly_reports=weekly_reports, 
                          comparison_data=comparison_data,
-                         current_week_data=current_week_data)
+                         current_week_data=current_week_data,
+                         inventory_reports=inventory_reports,
+                         inventory_comparison_data=inventory_comparison_data)
 
 @app.route('/force_archive', methods=['POST'])
 @require_permission('edit')

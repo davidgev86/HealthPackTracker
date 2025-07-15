@@ -270,6 +270,142 @@
 </div>
 {% endif %}
 
+<!-- Weekly Inventory Cost Tracking -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-dollar-sign me-2"></i>Weekly Inventory Cost Tracking</h4>
+    </div>
+    <div class="card-body">
+        {% if inventory_comparison_data %}
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Previous Week ({{ inventory_comparison_data.previous.week_start }} to {{ inventory_comparison_data.previous.week_end }})</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center">
+                                    <h4>${{ "%.2f"|format(inventory_comparison_data.previous.total_value) }}</h4>
+                                    <p class="mb-0">Total Value</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ inventory_comparison_data.previous.total_items }}</h4>
+                                    <p class="mb-0">Total Items</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Current Week ({{ inventory_comparison_data.current.week_start }} to {{ inventory_comparison_data.current.week_end }})</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>${{ "%.2f"|format(inventory_comparison_data.current.total_value) }}</h4>
+                                    <p class="mb-0">Total Value</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ inventory_comparison_data.current.total_items }}</h4>
+                                    <p class="mb-0">Total Items</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5>Change Analysis</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card {% if inventory_comparison_data.value_change > 0 %}border-success{% elif inventory_comparison_data.value_change < 0 %}border-danger{% else %}border-secondary{% endif %}">
+                            <div class="card-body text-center">
+                                <i class="fas fa-dollar-sign fa-2x {% if inventory_comparison_data.value_change > 0 %}text-success{% elif inventory_comparison_data.value_change < 0 %}text-danger{% else %}text-muted{% endif %} mb-2"></i>
+                                <h4 class="{% if inventory_comparison_data.value_change > 0 %}text-success{% elif inventory_comparison_data.value_change < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                    {% if inventory_comparison_data.value_change > 0 %}+{% endif %}${{ "%.2f"|format(inventory_comparison_data.value_change) }}
+                                </h4>
+                                <p class="mb-0">Value Change</p>
+                                <small class="text-muted">({{ "%.1f"|format(inventory_comparison_data.value_change_percent) }}%)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card {% if inventory_comparison_data.items_change > 0 %}border-success{% elif inventory_comparison_data.items_change < 0 %}border-danger{% else %}border-secondary{% endif %}">
+                            <div class="card-body text-center">
+                                <i class="fas fa-box fa-2x {% if inventory_comparison_data.items_change > 0 %}text-success{% elif inventory_comparison_data.items_change < 0 %}text-danger{% else %}text-muted{% endif %} mb-2"></i>
+                                <h4 class="{% if inventory_comparison_data.items_change > 0 %}text-success{% elif inventory_comparison_data.items_change < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                    {% if inventory_comparison_data.items_change > 0 %}+{% endif %}{{ inventory_comparison_data.items_change }}
+                                </h4>
+                                <p class="mb-0">Items Change</p>
+                                <small class="text-muted">({{ "%.1f"|format(inventory_comparison_data.items_change_percent) }}%)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Category Comparison -->
+            <div class="mt-4">
+                <h5>Category Spending Comparison</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Previous Week - Top Categories</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if inventory_comparison_data.previous.by_category %}
+                                    {% for category, value in inventory_comparison_data.previous.by_category.items() %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-truncate">{{ category }}</span>
+                                        <span class="badge bg-secondary">${{ "%.2f"|format(value) }}</span>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-muted small">No category data available</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Current Week - Top Categories</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if inventory_comparison_data.current.by_category %}
+                                    {% for category, value in inventory_comparison_data.current.by_category.items() %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-truncate">{{ category }}</span>
+                                        <span class="badge bg-primary">${{ "%.2f"|format(value) }}</span>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-muted small">No category data available</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No inventory comparison data available yet. Weekly inventory reports are generated automatically every 7 days.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 <!-- Historical Reports -->
 <div class="card">
     <div class="card-header">
