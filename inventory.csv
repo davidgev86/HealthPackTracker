@@ -1,7 +1,7 @@
 name,unit,quantity,par_level,category,unit_cost,vendors,last_updated
 Chicken Breast,lbs,11,10,Meat & Poultry,2.5,Sams Club,2025-07-14 02:31:35
 Rice,lbs,15,5,Grains,1.25,,2025-07-14 00:31:08
-Olive Oil,liters,8,3,General,8.99,,2025-07-09 15:30:27
+Olive Oil,liters,7,3,General,8.99,,2025-07-15 00:52:11
 Beef,lbs,25,10,Proteins,6.99,,2025-07-14 02:28:37
 Butter,lbs,2,1,dairy,0.0,,2025-07-09 15:30:27
 Green Beans,lbs,24,5,General,1.6,,2025-07-14 02:32:04
@@ -12,3 +12,5 @@ Chicken Parmesan with Broccoli,pieces,2,3,Frozen Chicken Meals,21.99,HPM,2025-07
 Steak Top Round,lbs,39,10,Meat & Poultry,6.49,Costco,2025-07-14 02:48:02
 Beef Taco Meat,lbs,4,3,Frozen Bulk Items,24.95,HPM,2025-07-14 02:55:22
 Beef Meatballs,lbs,0,3,Frozen Bulk Items,25.95,HPM,2025-07-14 02:56:52
+Grilled Steak,lbs,1,3,Frozen Bulk Items,49.95,HPM,2025-07-14 03:00:46
+Hot dogs,lbs,52,65,Meat & Poultry,1.0,Costco,2025-07-14 05:06:39

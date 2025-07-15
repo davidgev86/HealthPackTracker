@@ -620,9 +620,13 @@ def should_archive_waste_log() -> bool:
     if not entries:
         return False
     
-    # Check if oldest entry is 7+ days old
-    oldest_entry_date = min(datetime.strptime(entry.date, '%Y-%m-%d %H:%M:%S') for entry in entries)
-    return (datetime.now() - oldest_entry_date).days >= 7
+    try:
+        # Check if oldest entry is 7+ days old
+        oldest_entry_date = min(datetime.strptime(entry.date, '%Y-%m-%d %H:%M:%S') for entry in entries)
+        return (datetime.now() - oldest_entry_date).days >= 7
+    except (ValueError, TypeError):
+        # If there's an issue parsing dates, don't archive
+        return False
 
 def generate_weekly_report(entries: List[WasteEntry], week_start: str, week_end: str) -> WeeklyWasteReport:
     """Generate weekly waste report from entries"""
@@ -737,7 +741,11 @@ def get_week_comparison(weeks_back: int = 1) -> Tuple[Optional[WeeklyWasteReport
 
 def check_and_archive_if_needed():
     """Check if archival is needed and perform it"""
-    if should_archive_waste_log():
-        archive_waste_log()
-        return True
-    return False
+    try:
+        if should_archive_waste_log():
+            archive_waste_log()
+            return True
+        return False
+    except Exception:
+        # If archival fails, don't break the application
+        return False

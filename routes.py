@@ -254,106 +254,119 @@ def update_count(item_name):
 def waste_log():
     """Waste logging page with full CRUD operations"""
     # Check if we need to archive old waste data
-    if check_and_archive_if_needed():
-        flash('Waste log archived automatically (7+ days old data moved to archive).', 'info')
+    try:
+        if check_and_archive_if_needed():
+            flash('Waste log archived automatically (7+ days old data moved to archive).', 'info')
+    except Exception:
+        # If archival check fails, continue without archiving
+        pass
     if request.method == 'POST':
         action = request.form.get('action')
         
         if action == 'add':
-            item_name = request.form['item_name'].strip()
-            quantity = int(request.form['quantity'])
-            unit = request.form['unit'].strip()
-            reason = request.form['reason'].strip()
-            
-            # Get unit cost from inventory item
-            item = get_inventory_item(item_name)
-            unit_cost = item.unit_cost if item else 0.0
-            
-            # Create waste entry
-            entry = WasteEntry(
-                item_name=item_name,
-                quantity=quantity,
-                unit=unit,
-                reason=reason,
-                date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                logged_by=session['username'],
-                unit_cost=unit_cost
-            )
-            
-            # Add to waste log
-            add_waste_entry(entry)
-            
-            # Update inventory if item exists
-            if item:
-                item.quantity = max(0, item.quantity - quantity)
-                item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                update_inventory_item(item_name, item)
-            
-            flash(f'Waste logged for "{item_name}".', 'success')
-        
-        elif action == 'edit':
-            entry_index = int(request.form.get('entry_index', -1))
-            item_name = request.form['item_name'].strip()
-            quantity = int(request.form['quantity'])
-            unit = request.form['unit'].strip()
-            reason = request.form['reason'].strip()
-            
-            # Get original entry to restore inventory
-            original_entry = get_waste_entry(entry_index)
-            if original_entry:
-                # Restore inventory from original entry
-                original_item = get_inventory_item(original_entry.item_name)
-                if original_item:
-                    original_item.quantity += original_entry.quantity
-                    update_inventory_item(original_entry.item_name, original_item)
-            
-            # Get unit cost from inventory item
-            item = get_inventory_item(item_name)
-            unit_cost = item.unit_cost if item else 0.0
-            
-            # Create updated entry
-            updated_entry = WasteEntry(
-                item_name=item_name,
-                quantity=quantity,
-                unit=unit,
-                reason=reason,
-                date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                logged_by=session['username'],
-                unit_cost=unit_cost
-            )
-            
-            # Update waste log
-            if update_waste_entry(entry_index, updated_entry):
-                # Update inventory with new waste
+            try:
+                item_name = request.form['item_name'].strip()
+                quantity = int(request.form['quantity'])
+                unit = request.form['unit'].strip()
+                reason = request.form['reason'].strip()
+                
+                # Get unit cost from inventory item
+                item = get_inventory_item(item_name)
+                unit_cost = item.unit_cost if item else 0.0
+                
+                # Create waste entry
+                entry = WasteEntry(
+                    item_name=item_name,
+                    quantity=quantity,
+                    unit=unit,
+                    reason=reason,
+                    date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    logged_by=session['username'],
+                    unit_cost=unit_cost
+                )
+                
+                # Add to waste log
+                add_waste_entry(entry)
+                
+                # Update inventory if item exists
                 if item:
                     item.quantity = max(0, item.quantity - quantity)
                     item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     update_inventory_item(item_name, item)
                 
-                flash(f'Waste entry updated successfully.', 'success')
-            else:
-                flash('Error updating waste entry.', 'danger')
+                flash(f'Waste logged for "{item_name}".', 'success')
+            except Exception as e:
+                flash(f'Error logging waste entry: {str(e)}', 'danger')
+        
+        elif action == 'edit':
+            try:
+                entry_index = int(request.form.get('entry_index', -1))
+                item_name = request.form['item_name'].strip()
+                quantity = int(request.form['quantity'])
+                unit = request.form['unit'].strip()
+                reason = request.form['reason'].strip()
+                
+                # Get original entry to restore inventory
+                original_entry = get_waste_entry(entry_index)
+                if original_entry:
+                    # Restore inventory from original entry
+                    original_item = get_inventory_item(original_entry.item_name)
+                    if original_item:
+                        original_item.quantity += original_entry.quantity
+                        update_inventory_item(original_entry.item_name, original_item)
+                
+                # Get unit cost from inventory item
+                item = get_inventory_item(item_name)
+                unit_cost = item.unit_cost if item else 0.0
+                
+                # Create updated entry
+                updated_entry = WasteEntry(
+                    item_name=item_name,
+                    quantity=quantity,
+                    unit=unit,
+                    reason=reason,
+                    date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    logged_by=session['username'],
+                    unit_cost=unit_cost
+                )
+                
+                # Update waste log
+                if update_waste_entry(entry_index, updated_entry):
+                    # Update inventory with new waste
+                    if item:
+                        item.quantity = max(0, item.quantity - quantity)
+                        item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        update_inventory_item(item_name, item)
+                    
+                    flash(f'Waste entry updated successfully.', 'success')
+                else:
+                    flash('Error updating waste entry.', 'danger')
+            except Exception as e:
+                flash(f'Error updating waste entry: {str(e)}', 'danger')
         
         elif action == 'delete':
-            entry_index = int(request.form.get('entry_index', -1))
-            
-            # Get entry to restore inventory
-            entry = get_waste_entry(entry_index)
-            if entry:
-                # Restore inventory
-                item = get_inventory_item(entry.item_name)
-                if item:
-                    item.quantity += entry.quantity
-                    item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    update_inventory_item(entry.item_name, item)
+            try:
+                entry_index = int(request.form.get('entry_index', -1))
                 
-                # Delete entry
-                if delete_waste_entry(entry_index):
-                    flash(f'Waste entry deleted successfully.', 'success')
+                # Get entry to restore inventory
+                entry = get_waste_entry(entry_index)
+                if entry:
+                    # Restore inventory
+                    item = get_inventory_item(entry.item_name)
+                    if item:
+                        item.quantity += entry.quantity
+                        item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        update_inventory_item(entry.item_name, item)
+                    
+                    # Delete entry
+                    if delete_waste_entry(entry_index):
+                        flash(f'Waste entry deleted successfully.', 'success')
+                    else:
+                        flash('Error deleting waste entry.', 'danger')
                 else:
-                    flash('Error deleting waste entry.', 'danger')
-            else:
-                flash('Waste entry not found.', 'danger')
+                    flash('Waste entry not found.', 'danger')
+            except Exception as e:
+                flash(f'Error deleting waste entry: {str(e)}', 'danger')
         
         return redirect(url_for('waste_log'))
     

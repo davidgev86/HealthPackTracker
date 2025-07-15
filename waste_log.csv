@@ -1,4 +1,2 @@
 item_name,quantity,unit,reason,date,logged_by,unit_cost
-Green Beans,2,lbs,Spoiled,2025-07-14 02:32:04,admin,1.6
-steak,1,lbs,Waste,2025-07-14 02:43:17,admin,6.49
-Steak Top Round,1,lbs,Waste,2025-07-14 02:47:56,admin,6.49
+Olive Oil,1,liters,Contaminated,2025-07-15 00:52:11,admin,8.99
