@@ -119,6 +119,7 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 15, 2025. Added manual "Generate Report" button for admin users to force create weekly inventory reports
 - July 15, 2025. Added weekly inventory cost tracking system with WeeklyInventoryReport model for spending analysis
 - July 15, 2025. Enhanced weekly waste reports page to include inventory cost tracking with week-to-week comparisons
 - July 15, 2025. Implemented automated weekly inventory report generation every 7 days (excluding HPM items)

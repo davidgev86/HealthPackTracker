@@ -789,6 +789,20 @@ def force_archive():
     
     return redirect(url_for('weekly_waste_reports'))
 
+@app.route('/force_generate_inventory_report', methods=['POST'])
+@require_permission('admin')
+def force_generate_inventory_report():
+    """Force generate weekly inventory report (for admin users)"""
+    try:
+        from utils import generate_weekly_inventory_report, save_weekly_inventory_report
+        report = generate_weekly_inventory_report()
+        save_weekly_inventory_report(report)
+        flash('Weekly inventory report generated successfully!', 'success')
+    except Exception as e:
+        flash(f'Error generating inventory report: {str(e)}', 'danger')
+    
+    return redirect(url_for('weekly_waste_reports'))
+
 # HPM Items Management Routes
 @app.route('/hpm_items', methods=['GET', 'POST'])
 @require_login
