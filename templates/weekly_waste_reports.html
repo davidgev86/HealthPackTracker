@@ -121,7 +121,7 @@
                 <h5>Previous Week ({{ comparison_data.previous.week_start }} to {{ comparison_data.previous.week_end }})</h5>
                 <div class="row">
                     <div class="col-6">
-                        <div class="card bg-light">
+                        <div class="card bg-secondary text-white">
                             <div class="card-body text-center">
                                 <h4>${{ "%.2f"|format(comparison_data.previous.total_value) }}</h4>
                                 <p class="mb-0">Total Value</p>
@@ -129,7 +129,7 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="card bg-light">
+                        <div class="card bg-secondary text-white">
                             <div class="card-body text-center">
                                 <h4>{{ comparison_data.previous.total_entries }}</h4>
                                 <p class="mb-0">Total Entries</p>
@@ -137,12 +137,28 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Previous Week Top Categories -->
+                <div class="mt-3">
+                    <h6>Top Categories</h6>
+                    {% if comparison_data.previous.by_category %}
+                        {% for category, value in comparison_data.previous.by_category.items() %}
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">{{ category }}</span>
+                            <span class="badge bg-secondary">${{ "%.2f"|format(value) }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted small">No waste data available</div>
+                    {% endif %}
+                </div>
             </div>
+            
             <div class="col-md-6">
                 <h5>Current Week ({{ comparison_data.current.week_start }} to {{ comparison_data.current.week_end }})</h5>
                 <div class="row">
                     <div class="col-6">
-                        <div class="card bg-light">
+                        <div class="card bg-primary text-white">
                             <div class="card-body text-center">
                                 <h4>${{ "%.2f"|format(comparison_data.current.total_value) }}</h4>
                                 <p class="mb-0">Total Value</p>
@@ -150,13 +166,28 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="card bg-light">
+                        <div class="card bg-primary text-white">
                             <div class="card-body text-center">
                                 <h4>{{ comparison_data.current.total_entries }}</h4>
                                 <p class="mb-0">Total Entries</p>
                             </div>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Current Week Top Categories -->
+                <div class="mt-3">
+                    <h6>Top Categories</h6>
+                    {% if comparison_data.current.by_category %}
+                        {% for category, value in comparison_data.current.by_category.items() %}
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">{{ category }}</span>
+                            <span class="badge bg-primary">${{ "%.2f"|format(value) }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted small">No waste data available</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -165,23 +196,72 @@
             <h5>Change Analysis</h5>
             <div class="row">
                 <div class="col-md-6">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-dollar-sign me-2"></i>
-                        <span>Value Change: </span>
-                        <span class="ms-2 fw-bold {% if comparison_data.value_change > 0 %}text-danger{% elif comparison_data.value_change < 0 %}text-success{% else %}text-muted{% endif %}">
-                            {% if comparison_data.value_change > 0 %}+{% endif %}${{ "%.2f"|format(comparison_data.value_change) }}
-                            ({{ "%.1f"|format(comparison_data.value_change_percent) }}%)
-                        </span>
+                    <div class="card {% if comparison_data.value_change > 0 %}border-danger{% elif comparison_data.value_change < 0 %}border-success{% else %}border-secondary{% endif %}">
+                        <div class="card-body text-center">
+                            <i class="fas fa-dollar-sign fa-2x {% if comparison_data.value_change > 0 %}text-danger{% elif comparison_data.value_change < 0 %}text-success{% else %}text-muted{% endif %} mb-2"></i>
+                            <h4 class="{% if comparison_data.value_change > 0 %}text-danger{% elif comparison_data.value_change < 0 %}text-success{% else %}text-muted{% endif %}">
+                                {% if comparison_data.value_change > 0 %}+{% endif %}${{ "%.2f"|format(comparison_data.value_change) }}
+                            </h4>
+                            <p class="mb-0">Value Change</p>
+                            <small class="text-muted">({{ "%.1f"|format(comparison_data.value_change_percent) }}%)</small>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-list-ol me-2"></i>
-                        <span>Entries Change: </span>
-                        <span class="ms-2 fw-bold {% if comparison_data.entries_change > 0 %}text-danger{% elif comparison_data.entries_change < 0 %}text-success{% else %}text-muted{% endif %}">
-                            {% if comparison_data.entries_change > 0 %}+{% endif %}{{ comparison_data.entries_change }}
-                            ({{ "%.1f"|format(comparison_data.entries_change_percent) }}%)
-                        </span>
+                    <div class="card {% if comparison_data.entries_change > 0 %}border-danger{% elif comparison_data.entries_change < 0 %}border-success{% else %}border-secondary{% endif %}">
+                        <div class="card-body text-center">
+                            <i class="fas fa-list-ol fa-2x {% if comparison_data.entries_change > 0 %}text-danger{% elif comparison_data.entries_change < 0 %}text-success{% else %}text-muted{% endif %} mb-2"></i>
+                            <h4 class="{% if comparison_data.entries_change > 0 %}text-danger{% elif comparison_data.entries_change < 0 %}text-success{% else %}text-muted{% endif %}">
+                                {% if comparison_data.entries_change > 0 %}+{% endif %}{{ comparison_data.entries_change }}
+                            </h4>
+                            <p class="mb-0">Entries Change</p>
+                            <small class="text-muted">({{ "%.1f"|format(comparison_data.entries_change_percent) }}%)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Category Comparison -->
+        <div class="mt-4">
+            <h5>Category Comparison</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Previous Week - Top Waste Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if comparison_data.previous.by_category %}
+                                {% for category, value in comparison_data.previous.by_category.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-truncate">{{ category }}</span>
+                                    <span class="badge bg-secondary">${{ "%.2f"|format(value) }}</span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-muted small">No category data available</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Current Week - Top Waste Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if comparison_data.current.by_category %}
+                                {% for category, value in comparison_data.current.by_category.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-truncate">{{ category }}</span>
+                                    <span class="badge bg-primary">${{ "%.2f"|format(value) }}</span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-muted small">No category data available</div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
