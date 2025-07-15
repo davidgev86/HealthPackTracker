@@ -750,4 +750,98 @@ def force_archive():
     
     return redirect(url_for('weekly_waste_reports'))
 
+# HPM Items Management Routes
+@app.route('/hpm_items', methods=['GET', 'POST'])
+@require_login
+def hpm_items():
+    """HPM Items management page with filtering and actions"""
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'update_count':
+            try:
+                item_name = request.form.get('item_name', '').strip()
+                new_count = float(request.form.get('new_count', 0))
+                
+                item = get_inventory_item(item_name)
+                if item and 'HPM' in item.get_vendors():
+                    item.quantity = new_count
+                    item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    update_inventory_item(item_name, item)
+                    flash(f'Updated count for "{item_name}" to {new_count}.', 'success')
+                else:
+                    flash(f'HPM item "{item_name}" not found.', 'danger')
+            except Exception as e:
+                flash(f'Error updating count: {str(e)}', 'danger')
+        
+        elif action == 'log_waste':
+            try:
+                item_name = request.form.get('item_name', '').strip()
+                quantity = float(request.form.get('quantity', 0))
+                unit = request.form.get('unit', '').strip()
+                reason = request.form.get('reason', '').strip()
+                
+                # Verify item is HPM item
+                item = get_inventory_item(item_name)
+                if not item or 'HPM' not in item.get_vendors():
+                    flash(f'"{item_name}" is not an HPM item.', 'danger')
+                    return redirect(url_for('hpm_items'))
+                
+                # Get unit cost from inventory item
+                unit_cost = item.unit_cost if item else 0.0
+                
+                # Create waste entry
+                entry = WasteEntry(
+                    item_name=item_name,
+                    quantity=quantity,
+                    unit=unit,
+                    reason=reason,
+                    date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    logged_by=session['username'],
+                    unit_cost=unit_cost
+                )
+                
+                # Add to waste log
+                add_waste_entry(entry)
+                
+                # Update inventory
+                item.quantity = max(0, item.quantity - quantity)
+                item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                update_inventory_item(item_name, item)
+                
+                flash(f'Waste logged for "{item_name}".', 'success')
+            except Exception as e:
+                flash(f'Error logging waste: {str(e)}', 'danger')
+        
+        return redirect(url_for('hpm_items'))
+    
+    # Get all inventory items and filter for HPM vendor
+    all_items = read_inventory()
+    hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
+    
+    # Get HPM waste log entries
+    all_waste_entries = read_waste_log()
+    hpm_waste_entries = [entry for entry in all_waste_entries if any(item.name == entry.item_name and 'HPM' in item.get_vendors() for item in all_items)]
+    
+    # Get HPM low stock items
+    hpm_low_stock = [item for item in hpm_items if item.is_low_stock()]
+    
+    # Calculate totals
+    total_items = len(hpm_items)
+    total_value = sum(item.total_value() for item in hpm_items)
+    total_waste_value = sum(entry.waste_value() for entry in hpm_waste_entries)
+    low_stock_count = len(hpm_low_stock)
+    
+    user = get_user(session['username'])
+    
+    return render_template('hpm_items.html',
+                         hpm_items=hpm_items,
+                         hpm_waste_entries=hpm_waste_entries,
+                         hpm_low_stock=hpm_low_stock,
+                         total_items=total_items,
+                         total_value=total_value,
+                         total_waste_value=total_waste_value,
+                         low_stock_count=low_stock_count,
+                         user=user)
+
 

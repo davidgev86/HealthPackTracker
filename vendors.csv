@@ -1,8 +1,8 @@
-name,contact_info,address,phone,email
-Sams Club,,,,
-Costco,,,,
-Restaurant Depot,,,,
-Webrestaurant,,,,
-Keany Produce,,,,
-H-mart,,,,
-HPM,,,,
+name,contact_info,address,phone,email,exclude_from_shopping_list
+Sams Club,,,,,False
+Costco,,,,,False
+Restaurant Depot,,,,,False
+Webrestaurant,,,,,False
+Keany Produce,,,,,False
+H-mart,,,,,False
+HPM,,,,,True

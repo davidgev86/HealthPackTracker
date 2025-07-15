@@ -1,9 +1,9 @@
 name,unit,quantity,par_level,category,unit_cost,vendors,last_updated
 Chicken Breast,lbs,8.0,10,Meat & Poultry,2.5,Sams Club,2025-07-15 01:11:36
-Rice,lbs,4.0,5,Grains,1.25,,2025-07-15 01:18:16
-Olive Oil,liters,2.0,3,General,8.99,,2025-07-15 01:18:22
-Beef,lbs,8.0,10,Proteins,6.99,,2025-07-15 01:18:29
-Butter,lbs,0.5,1,dairy,0.0,,2025-07-15 01:18:38
+Rice,lbs,4.0,5,General,1.25,Sams Club,2025-07-15 01:29:47
+Olive Oil,liters,2.0,3,General,8.99,Sams Club,2025-07-15 01:29:54
+Beef,lbs,8.0,10,General,6.99,Costco,2025-07-15 01:30:01
+Butter,lbs,0.5,1,General,0.0,Costco,2025-07-15 01:30:08
 Green Beans,lbs,24.0,5,General,1.6,,2025-07-14 02:32:04
 Broccoli,lbs,6.0,5,Vegatables,0.0,,2025-07-09 15:30:27
 Mushrooms,lbs,6.0,5,Vegatables,0.0,,2025-07-15 01:01:05

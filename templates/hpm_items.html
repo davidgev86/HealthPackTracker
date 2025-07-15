@@ -1,0 +1,361 @@
+{% extends "layout.html" %}
+
+{% block title %}HPM Items Management - HPM Inventory{% endblock %}
+
+{% block content %}
+<style>
+    .hpm-card {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        background-color: var(--bs-card-bg);
+    }
+    
+    .hpm-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background-color: var(--bs-card-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--bs-secondary);
+    }
+    
+    .item-card {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: var(--bs-card-bg);
+    }
+    
+    .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-name {
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+    
+    .low-stock {
+        background-color: var(--bs-warning);
+        color: var(--bs-dark);
+    }
+    
+    .in-stock {
+        background-color: var(--bs-success);
+        color: white;
+    }
+    
+    .waste-entry {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 4px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background-color: var(--bs-card-bg);
+    }
+    
+    .waste-date {
+        font-size: 0.85rem;
+        color: var(--bs-secondary);
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 768px) {
+        .hpm-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .item-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .quick-actions {
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-boxes me-2"></i>HPM Items Management</h2>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
+            <i class="fas fa-warehouse me-2"></i>Main Inventory
+        </a>
+        <a href="{{ url_for('vendors') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-truck me-2"></i>Vendors
+        </a>
+    </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- HPM Statistics -->
+<div class="hpm-stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_items }}</div>
+        <div class="stat-label">Total HPM Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">${{ "%.2f"|format(total_value) }}</div>
+        <div class="stat-label">Total Inventory Value</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ low_stock_count }}</div>
+        <div class="stat-label">Low Stock Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">${{ "%.2f"|format(total_waste_value) }}</div>
+        <div class="stat-label">Total Waste Value</div>
+    </div>
+</div>
+
+<!-- HPM Items Inventory -->
+<div class="hpm-card">
+    <h3>
+        <i class="fas fa-boxes"></i>
+        HPM Inventory Items ({{ hpm_items|length }})
+    </h3>
+    
+    {% if hpm_items %}
+        {% for item in hpm_items %}
+            <div class="item-card">
+                <div class="item-header">
+                    <div>
+                        <span class="item-name">{{ item.name }}</span>
+                        <span class="badge {{ 'low-stock' if item.is_low_stock() else 'in-stock' }}">
+                            {{ 'Low Stock' if item.is_low_stock() else 'In Stock' }}
+                        </span>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showUpdateCount('{{ item.name }}', {{ item.quantity }}, '{{ item.unit }}')">
+                            <i class="fas fa-edit"></i>
+                            Update Count
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="showLogWaste('{{ item.name }}', '{{ item.unit }}')">
+                            <i class="fas fa-trash"></i>
+                            Log Waste
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Current Stock:</strong> {{ item.quantity }} {{ item.unit }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Par Level:</strong> {{ item.par_level }} {{ item.unit }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Unit Cost:</strong> ${{ "%.2f"|format(item.unit_cost) }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Total Value:</strong> ${{ "%.2f"|format(item.total_value()) }}
+                    </div>
+                </div>
+                
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <strong>Category:</strong> {{ item.category }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Last Updated:</strong> {{ item.last_updated or 'Never' }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No HPM items found. Items must have "HPM" as a vendor to appear here.
+        </div>
+    {% endif %}
+</div>
+
+<!-- HPM Waste Log -->
+<div class="hpm-card">
+    <h3>
+        <i class="fas fa-trash-alt"></i>
+        Recent HPM Waste Entries ({{ hpm_waste_entries|length }})
+    </h3>
+    
+    {% if hpm_waste_entries %}
+        {% for entry in hpm_waste_entries[-10:] %}
+            <div class="waste-entry">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>{{ entry.item_name }}</strong> - {{ entry.quantity }} {{ entry.unit }}
+                        <br>
+                        <small class="text-muted">{{ entry.reason }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="waste-date">{{ entry.date }}</div>
+                        <div><strong>${{ "%.2f"|format(entry.waste_value()) }}</strong></div>
+                        <small class="text-muted">by {{ entry.logged_by }}</small>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        {% if hpm_waste_entries|length > 10 %}
+            <div class="text-center mt-3">
+                <a href="{{ url_for('waste_log') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-list"></i>
+                    View All Waste Entries
+                </a>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No HPM waste entries found.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Update Count Modal -->
+<div class="modal fade" id="updateCountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Item Count</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="update_count">
+                    <input type="hidden" name="item_name" id="updateItemName">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Item Name</label>
+                        <input type="text" class="form-control" id="updateItemNameDisplay" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">New Count</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="new_count" id="updateNewCount" required>
+                            <span class="input-group-text" id="updateUnit"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Update Count
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Log Waste Modal -->
+<div class="modal fade" id="logWasteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Log Waste</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="log_waste">
+                    <input type="hidden" name="item_name" id="wasteItemName">
+                    <input type="hidden" name="unit" id="wasteUnit">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Item Name</label>
+                        <input type="text" class="form-control" id="wasteItemNameDisplay" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Quantity Wasted</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="quantity" required>
+                            <span class="input-group-text" id="wasteUnitDisplay"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason</label>
+                        <select class="form-select" name="reason" required>
+                            <option value="">Select reason...</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Spoiled">Spoiled</option>
+                            <option value="Over-prepared">Over-prepared</option>
+                            <option value="Customer complaint">Customer complaint</option>
+                            <option value="Staff error">Staff error</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-trash"></i>
+                        Log Waste
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showUpdateCount(itemName, currentCount, unit) {
+        document.getElementById('updateItemName').value = itemName;
+        document.getElementById('updateItemNameDisplay').value = itemName;
+        document.getElementById('updateNewCount').value = currentCount;
+        document.getElementById('updateUnit').textContent = unit;
+        new bootstrap.Modal(document.getElementById('updateCountModal')).show();
+    }
+    
+    function showLogWaste(itemName, unit) {
+        document.getElementById('wasteItemName').value = itemName;
+        document.getElementById('wasteItemNameDisplay').value = itemName;
+        document.getElementById('wasteUnit').value = unit;
+        document.getElementById('wasteUnitDisplay').textContent = unit;
+        new bootstrap.Modal(document.getElementById('logWasteModal')).show();
+    }
+</script>
+{% endblock %}

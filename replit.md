@@ -33,11 +33,18 @@ The application follows a simple MVC (Model-View-Controller) pattern built on Fl
 - **Low Stock Alerts**: Automatic identification of items below par levels
 - **Category Organization**: Predefined categories for food items and supplies
 - **Last Updated Tracking**: Timestamps for inventory changes
+- **HPM Items Isolation**: Dedicated page for HPM vendor items with separate inventory management
 
 ### Waste Logging
 - **Waste Entry Recording**: Track wasted inventory with quantity, reason, and timestamp
 - **User Attribution**: Log which user recorded each waste entry
 - **Inventory Integration**: Automatic inventory adjustment when waste is logged
+- **HPM Waste Tracking**: Isolated waste logging for HPM items with dedicated interface
+
+### Vendor Management
+- **Vendor Information**: Contact details, phone, email, and address tracking
+- **Shopping List Exclusion**: Option to exclude specific vendors from shopping lists and PDF reports
+- **Usage Tracking**: Visual indicators showing which vendors are actively used
 
 ### Data Import/Export
 - **CSV Export**: Download current inventory data for backup or external use
@@ -112,6 +119,8 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 15, 2025. Created dedicated HPM Items page with isolated inventory management and waste logging for HPM vendor items
+- July 15, 2025. Added vendor exclusion feature for shopping lists with checkbox controls in vendor management
 - July 15, 2025. Made all page headers consistent throughout the application to match homepage design
 - July 15, 2025. Enhanced weekly waste reports with meaningful data visualization and category comparisons
 - July 15, 2025. Implemented comprehensive decimal quantity support across all inventory and waste operations
