@@ -27,7 +27,7 @@ class User:
 class InventoryItem:
     name: str
     unit: str
-    quantity: int
+    quantity: float
     par_level: int
     category: str = 'General'
     unit_cost: float = 0.0  # Cost per unit
@@ -46,7 +46,7 @@ class InventoryItem:
         """Get list of vendors for this item"""
         return [v.strip() for v in self.vendors.split(',') if v.strip()]
     
-    def quantity_needed(self) -> int:
+    def quantity_needed(self) -> float:
         """Calculate quantity needed to reach par level"""
         return max(0, self.par_level - self.quantity)
     

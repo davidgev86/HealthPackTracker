@@ -121,7 +121,7 @@ def add_item():
     if request.method == 'POST':
         name = request.form['name'].strip()
         unit = request.form['unit'].strip()
-        quantity = int(request.form['quantity'])
+        quantity = float(request.form['quantity'])
         par_level = int(request.form['par_level'])
         category = request.form.get('category', 'General').strip()
         unit_cost = float(request.form.get('unit_cost', 0.0))
@@ -182,7 +182,7 @@ def edit_item(item_name):
         # Update item details
         item.name = new_name
         item.unit = request.form['unit'].strip()
-        item.quantity = int(request.form['quantity'])
+        item.quantity = float(request.form['quantity'])
         item.par_level = int(request.form['par_level'])
         item.category = request.form.get('category', 'General').strip()
         item.unit_cost = float(request.form.get('unit_cost', 0.0))
@@ -238,7 +238,7 @@ def update_count(item_name):
         flash(f'Item "{item_name}" not found.', 'danger')
         return redirect(url_for('inventory'))
     
-    new_count = int(request.form['count'])
+    new_count = float(request.form['count'])
     item.quantity = new_count
     item.last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     

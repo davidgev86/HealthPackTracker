@@ -92,7 +92,7 @@ def read_inventory() -> List[InventoryItem]:
                 item = InventoryItem(
                     name=row['name'],
                     unit=row['unit'],
-                    quantity=int(row['quantity']),
+                    quantity=float(row['quantity']),
                     par_level=int(row['par_level']),
                     category=row.get('category', 'General'),
                     unit_cost=float(row.get('unit_cost', 0.0)),
