@@ -41,8 +41,11 @@ def require_permission(permission):
                 return redirect(url_for('login'))
             
             user = get_user(session['username'])
-            if not user or not user.has_permission(permission):
-                flash('You do not have permission to access this page.', 'danger')
+            if not user:
+                flash(f'User not found: {session["username"]}', 'danger')
+                return redirect(url_for('inventory'))
+            if not user.has_permission(permission):
+                flash(f'User {user.username} with role {user.role} does not have permission: {permission}', 'danger')
                 return redirect(url_for('inventory'))
             
             return f(*args, **kwargs)
