@@ -112,6 +112,7 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 15, 2025. Made all page headers consistent throughout the application to match homepage design
 - July 15, 2025. Enhanced weekly waste reports with meaningful data visualization and category comparisons
 - July 15, 2025. Implemented comprehensive decimal quantity support across all inventory and waste operations
 - July 14, 2025. Updated waste log with full CRUD capabilities and modern card-based interface
