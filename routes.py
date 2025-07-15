@@ -828,29 +828,7 @@ def hpm_items():
             except Exception as e:
                 flash(f'Error logging waste: {str(e)}', 'danger')
         
-        elif action == 'generate_shopping_list':
-            try:
-                from utils import generate_shopping_list_pdf
-                from flask import make_response
-                
-                # Get HPM low stock items
-                all_items = read_inventory()
-                hpm_low_stock = [item for item in all_items if 'HPM' in item.get_vendors() and item.is_low_stock()]
-                
-                if not hpm_low_stock:
-                    flash('No HPM items are currently low in stock.', 'info')
-                    return redirect(url_for('hpm_items'))
-                
-                # Generate shopping list PDF for HPM items only
-                pdf_bytes = generate_hpm_shopping_list_pdf(hpm_low_stock)
-                
-                response = make_response(pdf_bytes)
-                response.headers['Content-Type'] = 'application/pdf'
-                response.headers['Content-Disposition'] = f'attachment; filename="hpm_shopping_list_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
-                return response
-            except Exception as e:
-                flash(f'Error generating shopping list: {str(e)}', 'danger')
-        
+
         return redirect(url_for('hpm_items'))
     
     # Get filter parameters

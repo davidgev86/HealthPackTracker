@@ -177,14 +177,7 @@
                     </button>
                 </div>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Quick Actions</label>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-success" onclick="generateShoppingList()">
-                        <i class="fas fa-shopping-cart me-1"></i>Shopping List
-                    </button>
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
@@ -433,20 +426,6 @@
         window.location.href = currentUrl.toString();
     }
     
-    function generateShoppingList() {
-        // Create a form to request HPM shopping list
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("hpm_items") }}';
-        
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'generate_shopping_list';
-        form.appendChild(actionInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
+
 </script>
 {% endblock %}
