@@ -147,6 +147,48 @@
     </div>
 </div>
 
+<!-- Filter Controls -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filter & Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <select class="form-select" onchange="applyFilter('category', this.value)">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Stock Status</label>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-warning {% if low_stock_filter %}active{% endif %}" 
+                            onclick="toggleLowStockFilter()">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Quick Actions</label>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success" onclick="generateShoppingList()">
+                        <i class="fas fa-shopping-cart me-1"></i>Shopping List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- HPM Items Inventory -->
 <div class="hpm-card">
     <h3>
@@ -356,6 +398,55 @@
         document.getElementById('wasteUnit').value = unit;
         document.getElementById('wasteUnitDisplay').textContent = unit;
         new bootstrap.Modal(document.getElementById('logWasteModal')).show();
+    }
+    
+    // Filter functions
+    function applyFilter(filterType, value) {
+        const currentUrl = new URL(window.location.href);
+        
+        if (value) {
+            currentUrl.searchParams.set(filterType, value);
+        } else {
+            currentUrl.searchParams.delete(filterType);
+        }
+        
+        window.location.href = currentUrl.toString();
+    }
+    
+    function toggleLowStockFilter() {
+        const currentUrl = new URL(window.location.href);
+        const currentValue = currentUrl.searchParams.get('low_stock');
+        
+        if (currentValue === 'true') {
+            currentUrl.searchParams.delete('low_stock');
+        } else {
+            currentUrl.searchParams.set('low_stock', 'true');
+        }
+        
+        window.location.href = currentUrl.toString();
+    }
+    
+    function clearFilters() {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('category');
+        currentUrl.searchParams.delete('low_stock');
+        window.location.href = currentUrl.toString();
+    }
+    
+    function generateShoppingList() {
+        // Create a form to request HPM shopping list
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("hpm_items") }}';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'generate_shopping_list';
+        form.appendChild(actionInput);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 </script>
 {% endblock %}

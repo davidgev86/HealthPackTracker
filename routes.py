@@ -828,24 +828,63 @@ def hpm_items():
             except Exception as e:
                 flash(f'Error logging waste: {str(e)}', 'danger')
         
+        elif action == 'generate_shopping_list':
+            try:
+                from utils import generate_shopping_list_pdf
+                from flask import make_response
+                
+                # Get HPM low stock items
+                all_items = read_inventory()
+                hpm_low_stock = [item for item in all_items if 'HPM' in item.get_vendors() and item.is_low_stock()]
+                
+                if not hpm_low_stock:
+                    flash('No HPM items are currently low in stock.', 'info')
+                    return redirect(url_for('hpm_items'))
+                
+                # Generate shopping list PDF for HPM items only
+                pdf_bytes = generate_hpm_shopping_list_pdf(hpm_low_stock)
+                
+                response = make_response(pdf_bytes)
+                response.headers['Content-Type'] = 'application/pdf'
+                response.headers['Content-Disposition'] = f'attachment; filename="hpm_shopping_list_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+                return response
+            except Exception as e:
+                flash(f'Error generating shopping list: {str(e)}', 'danger')
+        
         return redirect(url_for('hpm_items'))
+    
+    # Get filter parameters
+    category_filter = request.args.get('category', '').strip()
+    low_stock_filter = request.args.get('low_stock', '').lower() == 'true'
     
     # Get all inventory items and filter for HPM vendor
     all_items = read_inventory()
     hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
     
+    # Apply filters
+    if category_filter:
+        hpm_items = [item for item in hpm_items if item.category == category_filter]
+    
+    if low_stock_filter:
+        hpm_items = [item for item in hpm_items if item.is_low_stock()]
+    
     # Get HPM waste log entries
     all_waste_entries = read_waste_log()
     hpm_waste_entries = [entry for entry in all_waste_entries if any(item.name == entry.item_name and 'HPM' in item.get_vendors() for item in all_items)]
     
-    # Get HPM low stock items
-    hpm_low_stock = [item for item in hpm_items if item.is_low_stock()]
+    # Get HPM low stock items (for stats)
+    all_hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
+    hpm_low_stock = [item for item in all_hpm_items if item.is_low_stock()]
     
-    # Calculate totals
-    total_items = len(hpm_items)
-    total_value = sum(item.total_value() for item in hpm_items)
+    # Calculate totals (always use all HPM items for stats)
+    total_items = len(all_hpm_items)
+    total_value = sum(item.total_value() for item in all_hpm_items)
     total_waste_value = sum(entry.waste_value() for entry in hpm_waste_entries)
     low_stock_count = len(hpm_low_stock)
+    
+    # Get categories for filter dropdown
+    categories = list(set(item.category for item in all_hpm_items))
+    categories.sort()
     
     user = get_user(session['username'])
     
@@ -857,6 +896,9 @@ def hpm_items():
                          total_value=total_value,
                          total_waste_value=total_waste_value,
                          low_stock_count=low_stock_count,
+                         categories=categories,
+                         current_category=category_filter,
+                         low_stock_filter=low_stock_filter,
                          user=user)
 
 
