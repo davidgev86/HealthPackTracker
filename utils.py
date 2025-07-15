@@ -260,9 +260,9 @@ def get_waste_entry(entry_index: int) -> Optional[WasteEntry]:
         return None
 
 def get_low_stock_items() -> List[InventoryItem]:
-    """Get all items that are below par level"""
+    """Get all items that are below par level (excluding HPM items)"""
     items = read_inventory()
-    return [item for item in items if item.is_low_stock()]
+    return [item for item in items if item.is_low_stock() and 'HPM' not in item.get_vendors()]
 
 def export_inventory_csv() -> str:
     """Export inventory data as CSV string"""
@@ -418,7 +418,7 @@ def filter_inventory(category: str = None, vendor: str = None, low_stock_only: b
     return items
 
 def get_shopping_list_items() -> List[InventoryItem]:
-    """Get items that need to be restocked (low stock items), excluding items from excluded vendors"""
+    """Get items that need to be restocked (low stock items), excluding items from excluded vendors and HPM items"""
     low_stock_items = filter_inventory(low_stock_only=True)
     
     # Get excluded vendors
@@ -427,6 +427,9 @@ def get_shopping_list_items() -> List[InventoryItem]:
     for vendor in vendors:
         if vendor.exclude_from_shopping_list:
             excluded_vendors.add(vendor.name)
+    
+    # Always exclude HPM items from main shopping list
+    excluded_vendors.add('HPM')
     
     # Filter out items from excluded vendors
     filtered_items = []

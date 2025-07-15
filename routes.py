@@ -95,8 +95,16 @@ def inventory():
     low_stock_items = get_low_stock_items()
     user = get_user(session['username'])
     
-    # Calculate total inventory value
-    total_value = sum(item.total_value() for item in all_items)
+    # Exclude HPM items from main inventory calculations
+    non_hpm_items = [item for item in all_items if 'HPM' not in item.get_vendors()]
+    non_hpm_low_stock = [item for item in low_stock_items if 'HPM' not in item.get_vendors()]
+    
+    # Filter displayed items to exclude HPM items unless specifically filtering for HPM vendor
+    if vendor_filter != 'HPM':
+        items = [item for item in items if 'HPM' not in item.get_vendors()]
+    
+    # Calculate total inventory value (excluding HPM items)
+    total_value = sum(item.total_value() for item in non_hpm_items)
     
     # Get vendors and categories for filter dropdowns
     vendors = read_vendors()
@@ -104,8 +112,8 @@ def inventory():
     
     return render_template('inventory.html', 
                          items=items, 
-                         all_items=all_items,
-                         low_stock_count=len(low_stock_items),
+                         all_items=non_hpm_items,
+                         low_stock_count=len(non_hpm_low_stock),
                          total_value=total_value,
                          vendors=vendors,
                          categories=categories,
@@ -375,15 +383,19 @@ def waste_log():
     inventory_items = read_inventory()
     user = get_user(session['username'])
     
-    # Convert inventory items to dict format for JavaScript
-    inventory_data = [item.to_dict() for item in inventory_items]
+    # Exclude HPM items from main waste calculations
+    non_hpm_inventory = [item for item in inventory_items if 'HPM' not in item.get_vendors()]
+    non_hpm_waste_entries = [entry for entry in waste_entries if any(item.name == entry.item_name and 'HPM' not in item.get_vendors() for item in inventory_items)]
     
-    # Calculate total waste value
-    total_waste_value = sum(entry.waste_value() for entry in waste_entries)
+    # Convert non-HPM inventory items to dict format for JavaScript
+    inventory_data = [item.to_dict() for item in non_hpm_inventory]
+    
+    # Calculate total waste value (excluding HPM items)
+    total_waste_value = sum(entry.waste_value() for entry in non_hpm_waste_entries)
     
     return render_template('waste_log.html', 
-                         waste_entries=waste_entries, 
-                         inventory_items=inventory_items,
+                         waste_entries=non_hpm_waste_entries, 
+                         inventory_items=non_hpm_inventory,
                          inventory_data=inventory_data,
                          total_waste_value=total_waste_value,
                          user=user)
@@ -702,8 +714,11 @@ def weekly_waste_reports():
             'entries_change_percent': ((current_week.total_entries - previous_week.total_entries) / previous_week.total_entries * 100) if previous_week.total_entries > 0 else 0
         }
     
-    # Get current week data (if any)
-    current_waste_entries = read_waste_log()
+    # Get current week data (if any) - exclude HPM items
+    all_waste_entries = read_waste_log()
+    all_inventory_items = read_inventory()
+    current_waste_entries = [entry for entry in all_waste_entries if any(item.name == entry.item_name and 'HPM' not in item.get_vendors() for item in all_inventory_items)]
+    
     current_week_data = None
     if current_waste_entries:
         # Calculate current week totals
@@ -712,7 +727,7 @@ def weekly_waste_reports():
         
         # Group by category
         by_category = {}
-        inventory_items = {item.name: item for item in read_inventory()}
+        inventory_items = {item.name: item for item in all_inventory_items if 'HPM' not in item.get_vendors()}
         for entry in current_waste_entries:
             item = inventory_items.get(entry.item_name)
             category = item.category if item else 'Unknown'
