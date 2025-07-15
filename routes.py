@@ -41,11 +41,8 @@ def require_permission(permission):
                 return redirect(url_for('login'))
             
             user = get_user(session['username'])
-            if not user:
-                flash(f'User not found: {session["username"]}', 'danger')
-                return redirect(url_for('inventory'))
-            if not user.has_permission(permission):
-                flash(f'User {user.username} with role {user.role} does not have permission: {permission}', 'danger')
+            if not user or not user.has_permission(permission):
+                flash('You do not have permission to access this page.', 'danger')
                 return redirect(url_for('inventory'))
             
             return f(*args, **kwargs)
@@ -793,7 +790,7 @@ def force_archive():
     return redirect(url_for('weekly_waste_reports'))
 
 @app.route('/force_generate_inventory_report', methods=['POST'])
-@require_permission('admin')
+@require_permission('edit')
 def force_generate_inventory_report():
     """Force generate weekly inventory report (for admin users)"""
     try:
