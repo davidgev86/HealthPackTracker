@@ -448,6 +448,7 @@ def vendors():
             address = request.form.get('address', '').strip()
             phone = request.form.get('phone', '').strip()
             email = request.form.get('email', '').strip()
+            exclude_from_shopping_list = request.form.get('exclude_from_shopping_list') == 'on'
             
             if not name:
                 flash('Vendor name is required.', 'danger')
@@ -458,7 +459,8 @@ def vendors():
                 contact_info=contact_info,
                 address=address,
                 phone=phone,
-                email=email
+                email=email,
+                exclude_from_shopping_list=exclude_from_shopping_list
             )
             
             if add_vendor(new_vendor):
@@ -473,6 +475,7 @@ def vendors():
             address = request.form.get('address', '').strip()
             phone = request.form.get('phone', '').strip()
             email = request.form.get('email', '').strip()
+            exclude_from_shopping_list = request.form.get('exclude_from_shopping_list') == 'on'
             
             if not old_name or not new_name:
                 flash('Vendor name is required.', 'danger')
@@ -483,7 +486,8 @@ def vendors():
                 contact_info=contact_info,
                 address=address,
                 phone=phone,
-                email=email
+                email=email,
+                exclude_from_shopping_list=exclude_from_shopping_list
             )
             
             if update_vendor(old_name, updated_vendor):

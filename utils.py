@@ -333,7 +333,8 @@ def read_vendors() -> List[Vendor]:
                     contact_info=row.get('contact_info', ''),
                     address=row.get('address', ''),
                     phone=row.get('phone', ''),
-                    email=row.get('email', '')
+                    email=row.get('email', ''),
+                    exclude_from_shopping_list=row.get('exclude_from_shopping_list', 'False').lower() == 'true'
                 )
                 vendors.append(vendor)
     except FileNotFoundError:
@@ -343,7 +344,7 @@ def read_vendors() -> List[Vendor]:
 def write_vendors(vendors: List[Vendor]):
     """Write vendors to CSV file"""
     with open(VENDORS_FILE, 'w', newline='') as file:
-        fieldnames = ['name', 'contact_info', 'address', 'phone', 'email']
+        fieldnames = ['name', 'contact_info', 'address', 'phone', 'email', 'exclude_from_shopping_list']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for vendor in vendors:
@@ -417,8 +418,28 @@ def filter_inventory(category: str = None, vendor: str = None, low_stock_only: b
     return items
 
 def get_shopping_list_items() -> List[InventoryItem]:
-    """Get items that need to be restocked (low stock items)"""
-    return filter_inventory(low_stock_only=True)
+    """Get items that need to be restocked (low stock items), excluding items from excluded vendors"""
+    low_stock_items = filter_inventory(low_stock_only=True)
+    
+    # Get excluded vendors
+    excluded_vendors = set()
+    vendors = read_vendors()
+    for vendor in vendors:
+        if vendor.exclude_from_shopping_list:
+            excluded_vendors.add(vendor.name)
+    
+    # Filter out items from excluded vendors
+    filtered_items = []
+    for item in low_stock_items:
+        item_vendors = item.get_vendors()
+        if not item_vendors:  # Items with no vendor are included
+            filtered_items.append(item)
+        else:
+            # Include item if it has at least one non-excluded vendor
+            if not all(vendor in excluded_vendors for vendor in item_vendors):
+                filtered_items.append(item)
+    
+    return filtered_items
 
 
 
@@ -448,14 +469,22 @@ def generate_shopping_list_pdf() -> bytes:
     if not low_stock_items:
         story.append(Paragraph("No items are currently low in stock.", styles['Normal']))
     else:
-        # Group items by vendor
+        # Get excluded vendors
+        excluded_vendors = set()
+        vendors = read_vendors()
+        for vendor in vendors:
+            if vendor.exclude_from_shopping_list:
+                excluded_vendors.add(vendor.name)
+        
+        # Group items by vendor, excluding excluded vendors
         vendor_groups = {}
         for item in low_stock_items:
-            vendors = item.get_vendors() if item.get_vendors() else ['No Vendor Assigned']
-            for vendor in vendors:
-                if vendor not in vendor_groups:
-                    vendor_groups[vendor] = []
-                vendor_groups[vendor].append(item)
+            item_vendors = item.get_vendors() if item.get_vendors() else ['No Vendor Assigned']
+            for vendor in item_vendors:
+                if vendor not in excluded_vendors:  # Skip excluded vendors
+                    if vendor not in vendor_groups:
+                        vendor_groups[vendor] = []
+                    vendor_groups[vendor].append(item)
         
         # Create table for each vendor
         for vendor, items in vendor_groups.items():

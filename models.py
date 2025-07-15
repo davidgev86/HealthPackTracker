@@ -118,6 +118,7 @@ class Vendor:
     address: str = ''
     phone: str = ''
     email: str = ''
+    exclude_from_shopping_list: bool = False
     
     def to_dict(self) -> dict:
         """Convert to dictionary for CSV writing"""
@@ -126,7 +127,8 @@ class Vendor:
             'contact_info': self.contact_info,
             'address': self.address,
             'phone': self.phone,
-            'email': self.email
+            'email': self.email,
+            'exclude_from_shopping_list': str(self.exclude_from_shopping_list)
         }
 
 
