@@ -910,7 +910,7 @@ def hpm_items():
     return render_template('hpm_items.html',
                          hpm_items=hpm_items,
                          hpm_waste_entries=hpm_waste_entries,
-                         hpm_low_stock=hpm_low_stock,
+                         hpm_low_stock=filtered_low_stock,
                          total_items=total_items,
                          total_value=total_value,
                          total_waste_value=total_waste_value,
