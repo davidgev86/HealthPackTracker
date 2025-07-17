@@ -900,7 +900,8 @@ def hpm_items():
     total_waste_value = sum(entry.waste_value() for entry in filtered_waste_entries)
     low_stock_count = len(filtered_low_stock)
     
-    # Get categories for filter dropdown
+    # Get categories for filter dropdown  
+    all_hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
     categories = list(set(item.category for item in all_hpm_items))
     categories.sort()
     
