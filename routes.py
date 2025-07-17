@@ -888,15 +888,17 @@ def hpm_items():
     all_waste_entries = read_waste_log()
     hpm_waste_entries = [entry for entry in all_waste_entries if any(item.name == entry.item_name and 'HPM' in item.get_vendors() for item in all_items)]
     
-    # Get HPM low stock items (for stats)
-    all_hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
-    hpm_low_stock = [item for item in all_hpm_items if item.is_low_stock()]
+    # Calculate stats based on filtered items (not all HPM items)
+    filtered_low_stock = [item for item in hpm_items if item.is_low_stock()]
     
-    # Calculate totals (always use all HPM items for stats)
-    total_items = len(all_hpm_items)
-    total_value = sum(item.total_value() for item in all_hpm_items)
-    total_waste_value = sum(entry.waste_value() for entry in hpm_waste_entries)
-    low_stock_count = len(hpm_low_stock)
+    # Get waste entries for filtered items only
+    filtered_waste_entries = [entry for entry in hpm_waste_entries if any(item.name == entry.item_name for item in hpm_items)]
+    
+    # Calculate totals based on filtered items
+    total_items = len(hpm_items)
+    total_value = sum(item.total_value() for item in hpm_items)
+    total_waste_value = sum(entry.waste_value() for entry in filtered_waste_entries)
+    low_stock_count = len(filtered_low_stock)
     
     # Get categories for filter dropdown
     categories = list(set(item.category for item in all_hpm_items))

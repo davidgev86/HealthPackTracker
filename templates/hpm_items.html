@@ -131,19 +131,19 @@
 <div class="hpm-stats">
     <div class="stat-card">
         <div class="stat-value">{{ total_items }}</div>
-        <div class="stat-label">Total HPM Items</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Items{% else %}Total HPM Items{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">${{ "%.2f"|format(total_value) }}</div>
-        <div class="stat-label">Total Inventory Value</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Value{% else %}Total Inventory Value{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">{{ low_stock_count }}</div>
-        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Low Stock{% else %}Low Stock Items{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">${{ "%.2f"|format(total_waste_value) }}</div>
-        <div class="stat-label">Total Waste Value</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Waste Value{% else %}Total Waste Value{% endif %}</div>
     </div>
 </div>
 

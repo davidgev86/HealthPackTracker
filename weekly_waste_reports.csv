@@ -1,3 +1,4 @@
 week_start,week_end,total_entries,total_value,by_category,by_reason,by_item
 2025-07-08,2025-07-15,3,16.18,"{'General': 3.2, 'Unknown': 6.49, 'Meat & Poultry': 6.49}","{'Spoiled': 3.2, 'Waste': 12.98}","{'Green Beans': 3.2, 'steak': 6.49, 'Steak Top Round': 6.49}"
 2025-07-08,2025-07-15,3,12.235,"{'General': 8.99, 'Meat & Poultry': 3.245, 'Vegatables': 0.0}","{'Contaminated': 8.99, 'Spoiled': 3.245}","{'Olive Oil': 8.99, 'Steak Top Round': 3.245, 'Mushrooms': 0.0}"
+2025-07-10,2025-07-17,4,84.291,"{'Meat & Poultry': 49.341, 'Frozen Bulk Items': 34.95, 'General': 0.0}","{'Waste': 44.341, 'Expired': 34.95, 'Spoiled': 5.0, 'Damaged': 0.0}","{'Beef Chuck': 44.341, 'Cajun Shrimp': 34.95, 'Chicken Breast': 5.0, 'Mushrooms': 0.0}"

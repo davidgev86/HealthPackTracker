@@ -1,0 +1,5 @@
+item_name,quantity,unit,reason,date,logged_by,unit_cost
+Beef Chuck,6.38,lbs,Waste,2025-07-15 01:22:19,admin,6.95
+Cajun Shrimp,1.0,lbs,Expired,2025-07-15 02:04:14,admin,34.95
+Chicken Breast,2.0,lbs,Spoiled,2025-07-17 01:24:50,admin,2.5
+Mushrooms,1.5,lbs,Damaged,2025-07-17 01:25:18,admin,0.0
