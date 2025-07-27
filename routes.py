@@ -981,4 +981,60 @@ def hpm_reports():
     
     return render_template('hpm_reports.html', reports=reports, user=user)
 
+@app.route('/add_category', methods=['POST'])
+@require_permission('edit')
+def add_category_route():
+    """Add a new category"""
+    try:
+        data = request.get_json()
+        category_name = data.get('name', '').strip()
+        
+        if not category_name:
+            return jsonify({'success': False, 'error': 'Category name is required'})
+        
+        # Check if category already exists
+        existing_categories = get_category_names()
+        if category_name in existing_categories:
+            return jsonify({'success': False, 'error': 'Category already exists'})
+        
+        # Add new category
+        from models import Category
+        new_category = Category(
+            name=category_name,
+            description=f'Custom {category_name} category',
+            created_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        )
+        
+        add_category(new_category)
+        return jsonify({'success': True, 'message': f'Category "{category_name}" added successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/delete_category', methods=['POST'])
+@require_permission('edit')
+def delete_category_route():
+    """Delete a category"""
+    try:
+        data = request.get_json()
+        category_name = data.get('name', '').strip()
+        
+        if not category_name:
+            return jsonify({'success': False, 'error': 'Category name is required'})
+        
+        # Check if category is in use
+        if is_category_in_use(category_name):
+            return jsonify({'success': False, 'error': 'Cannot delete category - it is being used by inventory items'})
+        
+        # Don't allow deleting default categories that might be essential
+        if category_name in ['General', 'Frozen', 'Refrigerated', 'Dry Goods', 'Beverages']:
+            return jsonify({'success': False, 'error': 'Cannot delete default categories'})
+        
+        # Delete category
+        delete_category(category_name)
+        return jsonify({'success': True, 'message': f'Category "{category_name}" deleted successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 

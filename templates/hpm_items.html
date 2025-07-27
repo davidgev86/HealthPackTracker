@@ -156,14 +156,24 @@
         <div class="row">
             <div class="col-md-3">
                 <label class="form-label">Category</label>
-                <select class="form-select" onchange="applyFilter('category', this.value)">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                    <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
-                        {{ category }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="d-flex gap-2">
+                    <select class="form-select" onchange="applyFilter('category', this.value)">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if user.role in ['admin', 'manager'] %}
+                    <button class="btn btn-outline-primary btn-sm" onclick="showAddCategory()" title="Add Category">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="showDeleteCategory()" title="Delete Category">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             <div class="col-md-3">
                 <label class="form-label">Stock Status</label>
@@ -412,6 +422,74 @@
     </div>
 </div>
 
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form onsubmit="addCategory(event)">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="newCategoryName" required 
+                               placeholder="Enter category name...">
+                    </div>
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-info-circle me-1"></i>
+                        New categories will be available for all inventory items.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form onsubmit="deleteCategory(event)">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Category to Delete</label>
+                        <select class="form-select" id="deleteCategorySelect" required>
+                            <option value="">Choose category to delete...</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="alert alert-warning">
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>
+                        Warning: This action cannot be undone. Categories being used by items cannot be deleted.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Delete Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function showUpdateCount(itemName, currentCount, unit) {
         document.getElementById('updateItemName').value = itemName;
@@ -534,6 +612,84 @@
         if (searchTerm === '') {
             document.getElementById('searchResults').textContent = `Showing {{ hpm_items|length }} items`;
         }
+    }
+    
+    // Category management functions
+    function showAddCategory() {
+        document.getElementById('newCategoryName').value = '';
+        new bootstrap.Modal(document.getElementById('addCategoryModal')).show();
+    }
+    
+    function showDeleteCategory() {
+        new bootstrap.Modal(document.getElementById('deleteCategoryModal')).show();
+    }
+    
+    function addCategory(event) {
+        event.preventDefault();
+        
+        const categoryName = document.getElementById('newCategoryName').value.trim();
+        if (!categoryName) {
+            alert('Please enter a category name');
+            return;
+        }
+        
+        fetch('/add_category', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: categoryName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Category added successfully!');
+                location.reload();
+            } else {
+                alert('Error adding category: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error adding category: ' + error);
+        });
+        
+        bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+    }
+    
+    function deleteCategory(event) {
+        event.preventDefault();
+        
+        const categoryName = document.getElementById('deleteCategorySelect').value;
+        if (!categoryName) {
+            alert('Please select a category to delete');
+            return;
+        }
+        
+        if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
+            return;
+        }
+        
+        fetch('/delete_category', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: categoryName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Category deleted successfully!');
+                location.reload();
+            } else {
+                alert('Error deleting category: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error deleting category: ' + error);
+        });
+        
+        bootstrap.Modal.getInstance(document.getElementById('deleteCategoryModal')).hide();
     }
 
 </script>
