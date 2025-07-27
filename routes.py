@@ -900,9 +900,8 @@ def hpm_items():
     total_waste_value = sum(entry.waste_value() for entry in filtered_waste_entries)
     low_stock_count = len(filtered_low_stock)
     
-    # Get categories for filter dropdown  
-    all_hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
-    categories = list(set(item.category for item in all_hpm_items))
+    # Get categories for filter dropdown - include all available categories, not just ones in use
+    categories = get_category_names()
     categories.sort()
     
     user = get_user(session['username'])
