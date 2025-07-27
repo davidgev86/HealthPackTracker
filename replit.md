@@ -119,7 +119,8 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
-- July 27, 2025. Added category management functionality to HPM Items page allowing managers/admins to add and delete categories
+- July 27, 2025. Added category management functionality to HPM Items page allowing managers/admins to add and delete categories (including default categories)
+- July 27, 2025. Removed restrictions on deleting default categories per user preference for full customization control
 - July 27, 2025. Added search bar functionality to HPM Items page for easy meal finding within categories
 - July 15, 2025. Added manual "Generate Report" button for admin users to force create weekly inventory reports
 - July 15, 2025. Added weekly inventory cost tracking system with WeeklyInventoryReport model for spending analysis

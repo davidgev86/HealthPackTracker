@@ -1040,9 +1040,7 @@ def delete_category_route():
         if is_category_in_use(category_name):
             return jsonify({'success': False, 'error': 'Cannot delete category - it is being used by inventory items'})
         
-        # Don't allow deleting default categories that might be essential
-        if category_name in ['General', 'Frozen', 'Refrigerated', 'Dry Goods', 'Beverages']:
-            return jsonify({'success': False, 'error': 'Cannot delete default categories'})
+        # Allow deleting any category as long as it's not in use
         
         # Delete category
         success = delete_category(category_name)
