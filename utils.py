@@ -961,7 +961,7 @@ def generate_hpm_weekly_report():
                                 unit=row['unit'],
                                 reason=row['reason'],
                                 date=row['date'],
-                                user=row['logged_by'],
+                                logged_by=row['logged_by'],
                                 unit_cost=float(row.get('unit_cost', 0))
                             )
                             hpm_waste_entries.append(archived_entry)
@@ -996,11 +996,11 @@ def generate_hpm_weekly_report():
                 'item_name': entry.item_name,
                 'quantity': str(entry.quantity),
                 'unit': item.unit,
-                'cost_per_unit': str(item.cost_per_unit),
+                'cost_per_unit': str(item.unit_cost),
                 'waste_value': str(entry.waste_value()),
                 'reason': entry.reason,
                 'date': entry.date,
-                'user': entry.user,
+                'user': entry.logged_by,
                 'category': item.category
             })
     
