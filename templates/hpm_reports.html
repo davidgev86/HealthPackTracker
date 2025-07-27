@@ -158,7 +158,7 @@
                 <div class="stat-item">
                     <div class="stat-value">{{ report.total_items }}</div>
                     <div class="stat-label">Total HPM Items</div>
-                    {% if hasattr(report, 'items_change') %}
+                    {% if report.items_change is defined %}
                         {% if report.items_change > 0 %}
                             <span class="change-indicator change-positive">+{{ report.items_change }}</span>
                         {% elif report.items_change < 0 %}
@@ -172,7 +172,7 @@
                 <div class="stat-item">
                     <div class="stat-value">${{ "%.2f"|format(report.total_value) }}</div>
                     <div class="stat-label">Total Inventory Value</div>
-                    {% if hasattr(report, 'value_change') %}
+                    {% if report.value_change is defined %}
                         {% if report.value_change > 1 %}
                             <span class="change-indicator change-positive">+${{ "%.2f"|format(report.value_change) }}</span>
                         {% elif report.value_change < -1 %}
@@ -186,7 +186,7 @@
                 <div class="stat-item">
                     <div class="stat-value">{{ report.low_stock_count }}</div>
                     <div class="stat-label">Low Stock Items</div>
-                    {% if hasattr(report, 'low_stock_change') %}
+                    {% if report.low_stock_change is defined %}
                         {% if report.low_stock_change > 0 %}
                             <span class="change-indicator change-positive">+{{ report.low_stock_change }}</span>
                         {% elif report.low_stock_change < 0 %}
@@ -200,7 +200,7 @@
                 <div class="stat-item">
                     <div class="stat-value">${{ "%.2f"|format(report.total_waste_value) }}</div>
                     <div class="stat-label">Total Waste Value</div>
-                    {% if hasattr(report, 'waste_change') %}
+                    {% if report.waste_change is defined %}
                         {% if report.waste_change > 1 %}
                             <span class="change-indicator change-positive">+${{ "%.2f"|format(report.waste_change) }}</span>
                         {% elif report.waste_change < -1 %}
