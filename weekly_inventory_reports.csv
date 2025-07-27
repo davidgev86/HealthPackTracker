@@ -2,3 +2,4 @@ week_start,week_end,total_items,total_value,by_category,by_vendor,low_stock_item
 2025-07-14,2025-07-20,12,758.6285,"{'Meat & Poultry': 439.5285, 'General': 319.1}","{'Sams Club': 42.980000000000004, 'Costco': 475.4485, 'No Vendor': 65.2, 'Keany Produce': 175.0}",7,2025-07-15 02:42:08
 2025-07-14,2025-07-20,12,758.6285,"{'Meat & Poultry': 439.5285, 'General': 319.1}","{'Sams Club': 42.980000000000004, 'Costco': 475.4485, 'No Vendor': 65.2, 'Keany Produce': 175.0}",7,2025-07-15 02:52:27
 2025-07-14,2025-07-20,12,758.6285,"{'Meat & Poultry': 439.5285, 'General': 319.1}","{'Sams Club': 42.980000000000004, 'Costco': 475.4485, 'No Vendor': 65.2, 'Keany Produce': 175.0}",7,2025-07-17 01:23:09
+2025-07-21,2025-07-27,11,701.6285,"{'Meat & Poultry': 382.5285, 'General': 319.1}","{'Sams Club': 37.980000000000004, 'Costco': 423.4485, 'No Vendor': 65.2, 'Keany Produce': 175.0}",7,2025-07-27 01:54:14
