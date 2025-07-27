@@ -1,7 +1,7 @@
 """
 Flask routes for the HPM Inventory application.
 """
-from flask import render_template, request, redirect, url_for, flash, session, make_response
+from flask import render_template, request, redirect, url_for, flash, session, make_response, jsonify
 from datetime import datetime
 import csv
 import io
