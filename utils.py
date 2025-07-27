@@ -934,6 +934,7 @@ def generate_hpm_weekly_report():
     """Generate a manual HPM weekly report"""
     from models import HPMWeeklyReport
     import json
+    import glob
     
     current_date = datetime.now()
     all_items = read_inventory()
@@ -941,9 +942,31 @@ def generate_hpm_weekly_report():
     # Get HPM items only
     hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
     
-    # Get HPM waste entries
+    # Get HPM waste entries from both current waste log and archives
     all_waste_entries = read_waste_log()
     hpm_waste_entries = [entry for entry in all_waste_entries if any(item.name == entry.item_name for item in hpm_items)]
+    
+    # Also check archived HPM waste entries
+    if os.path.exists(HPM_WASTE_ARCHIVE_DIR):
+        for archive_file in glob.glob(os.path.join(HPM_WASTE_ARCHIVE_DIR, '*.csv')):
+            try:
+                with open(archive_file, 'r', newline='') as file:
+                    reader = csv.DictReader(file)
+                    for row in reader:
+                        if any(item.name == row['item_name'] for item in hpm_items):
+                            from models import WasteEntry
+                            archived_entry = WasteEntry(
+                                item_name=row['item_name'],
+                                quantity=float(row['quantity']),
+                                unit=row['unit'],
+                                reason=row['reason'],
+                                date=row['date'],
+                                user=row['logged_by'],
+                                unit_cost=float(row.get('unit_cost', 0))
+                            )
+                            hpm_waste_entries.append(archived_entry)
+            except Exception:
+                continue  # Skip corrupted archive files
     
     # Calculate stats
     total_items = len(hpm_items)
