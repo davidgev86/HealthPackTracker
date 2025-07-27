@@ -197,11 +197,32 @@
     </div>
 </div>
 
+<!-- Search Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" 
+                           placeholder="Search HPM items by name..." 
+                           onkeyup="searchItems()">
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <small class="text-muted" id="searchResults">Showing {{ hpm_items|length }} items</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- HPM Items Inventory -->
 <div class="hpm-card">
     <h3>
         <i class="fas fa-boxes"></i>
-        HPM Inventory Items ({{ hpm_items|length }})
+        HPM Inventory Items (<span id="visibleItemCount">{{ hpm_items|length }}</span>)
     </h3>
     
     {% if hpm_items %}
@@ -484,6 +505,34 @@
             .catch(error => {
                 alert('Error archiving waste log: ' + error);
             });
+        }
+    }
+    
+    // Search functionality
+    function searchItems() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const itemCards = document.querySelectorAll('.item-card');
+        let visibleCount = 0;
+        
+        itemCards.forEach(card => {
+            const itemName = card.querySelector('.item-name').textContent.toLowerCase();
+            const shouldShow = itemName.includes(searchTerm);
+            
+            if (shouldShow) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Update counters
+        document.getElementById('visibleItemCount').textContent = visibleCount;
+        document.getElementById('searchResults').textContent = `Showing ${visibleCount} items`;
+        
+        // If no search term, show original count
+        if (searchTerm === '') {
+            document.getElementById('searchResults').textContent = `Showing {{ hpm_items|length }} items`;
         }
     }
 
