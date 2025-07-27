@@ -1045,8 +1045,11 @@ def delete_category_route():
             return jsonify({'success': False, 'error': 'Cannot delete default categories'})
         
         # Delete category
-        delete_category(category_name)
-        return jsonify({'success': True, 'message': f'Category "{category_name}" deleted successfully'})
+        success = delete_category(category_name)
+        if success:
+            return jsonify({'success': True, 'message': f'Category "{category_name}" deleted successfully'})
+        else:
+            return jsonify({'success': False, 'error': f'Failed to delete category "{category_name}"'})
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
