@@ -197,3 +197,25 @@ DEFAULT_VENDORS = [
     'Keany Produce',
     'H-mart'
 ]
+
+@dataclass
+class HPMWeeklyReport:
+    date: str
+    total_items: int
+    total_value: float
+    low_stock_count: int
+    total_waste_value: float
+    top_waste_categories: str
+    comparison_notes: str = ''
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for CSV writing"""
+        return {
+            'date': self.date,
+            'total_items': str(self.total_items),
+            'total_value': str(self.total_value),
+            'low_stock_count': str(self.low_stock_count),
+            'total_waste_value': str(self.total_waste_value),
+            'top_waste_categories': self.top_waste_categories,
+            'comparison_notes': self.comparison_notes
+        }

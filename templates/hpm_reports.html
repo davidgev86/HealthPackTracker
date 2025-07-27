@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+
+{% block title %}HPM Weekly Reports - HPM Inventory Tracker{% endblock %}
+
+{% block content %}
+<style>
+    .report-card {
+        background: rgba(0, 100, 200, 0.1);
+        border: 2px solid rgba(0, 100, 200, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .report-card:hover {
+        border-color: rgba(0, 100, 200, 0.5);
+        background: rgba(0, 100, 200, 0.15);
+    }
+    
+    .report-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 10px;
+    }
+    
+    .report-date {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #4fc3f7;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .stat-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #ffffff;
+    }
+    
+    .stat-label {
+        font-size: 0.9em;
+        color: #b0bec5;
+        margin-top: 5px;
+    }
+    
+    .change-indicator {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        margin-left: 8px;
+    }
+    
+    .change-positive {
+        background-color: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+    }
+    
+    .change-negative {
+        background-color: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+    
+    .change-neutral {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #90a4ae;
+    }
+    
+    .comparison-notes {
+        background: rgba(255, 193, 7, 0.1);
+        border-left: 4px solid #ffc107;
+        padding: 10px 15px;
+        border-radius: 0 8px 8px 0;
+        font-style: italic;
+        color: #fff3c4;
+    }
+    
+    .top-categories {
+        background: rgba(156, 39, 176, 0.1);
+        border-left: 4px solid #9c27b0;
+        padding: 10px 15px;
+        border-radius: 0 8px 8px 0;
+        margin-top: 10px;
+    }
+    
+    .no-reports {
+        text-align: center;
+        color: #90a4ae;
+        font-size: 1.1em;
+        margin: 50px 0;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(0, 100, 200, 0.3);
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="page-header">
+        <h2><i class="fas fa-chart-line me-2"></i>HPM Weekly Reports</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('hpm_items') }}" class="btn btn-outline-primary">
+                <i class="fas fa-boxes me-2"></i>Back to HPM Items
+            </a>
+            <a href="{{ url_for('weekly_waste_reports') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-chart-bar me-2"></i>General Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if reports %}
+        <div class="mb-3">
+            <small class="text-muted">Showing {{ reports|length }} HPM weekly reports with week-to-week comparisons</small>
+        </div>
+        
+        {% for report in reports|reverse %}
+        <div class="report-card">
+            <div class="report-header">
+                <div class="report-date">
+                    <i class="fas fa-calendar me-2"></i>{{ report.date }}
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ report.total_items }}</div>
+                    <div class="stat-label">Total HPM Items</div>
+                    {% if hasattr(report, 'items_change') %}
+                        {% if report.items_change > 0 %}
+                            <span class="change-indicator change-positive">+{{ report.items_change }}</span>
+                        {% elif report.items_change < 0 %}
+                            <span class="change-indicator change-negative">{{ report.items_change }}</span>
+                        {% else %}
+                            <span class="change-indicator change-neutral">No change</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value">${{ "%.2f"|format(report.total_value) }}</div>
+                    <div class="stat-label">Total Inventory Value</div>
+                    {% if hasattr(report, 'value_change') %}
+                        {% if report.value_change > 1 %}
+                            <span class="change-indicator change-positive">+${{ "%.2f"|format(report.value_change) }}</span>
+                        {% elif report.value_change < -1 %}
+                            <span class="change-indicator change-negative">-${{ "%.2f"|format(abs(report.value_change)) }}</span>
+                        {% else %}
+                            <span class="change-indicator change-neutral">~$0</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value">{{ report.low_stock_count }}</div>
+                    <div class="stat-label">Low Stock Items</div>
+                    {% if hasattr(report, 'low_stock_change') %}
+                        {% if report.low_stock_change > 0 %}
+                            <span class="change-indicator change-positive">+{{ report.low_stock_change }}</span>
+                        {% elif report.low_stock_change < 0 %}
+                            <span class="change-indicator change-negative">{{ report.low_stock_change }}</span>
+                        {% else %}
+                            <span class="change-indicator change-neutral">No change</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value">${{ "%.2f"|format(report.total_waste_value) }}</div>
+                    <div class="stat-label">Total Waste Value</div>
+                    {% if hasattr(report, 'waste_change') %}
+                        {% if report.waste_change > 1 %}
+                            <span class="change-indicator change-positive">+${{ "%.2f"|format(report.waste_change) }}</span>
+                        {% elif report.waste_change < -1 %}
+                            <span class="change-indicator change-negative">-${{ "%.2f"|format(abs(report.waste_change)) }}</span>
+                        {% else %}
+                            <span class="change-indicator change-neutral">~$0</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if report.top_waste_categories %}
+            <div class="top-categories">
+                <strong><i class="fas fa-exclamation-triangle me-2"></i>Top Waste Categories:</strong>
+                {{ report.top_waste_categories }}
+            </div>
+            {% endif %}
+            
+            {% if report.comparison_notes %}
+            <div class="comparison-notes">
+                <strong><i class="fas fa-chart-line me-2"></i>Week-to-Week Analysis:</strong>
+                {{ report.comparison_notes }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+    {% else %}
+        <div class="no-reports">
+            <i class="fas fa-chart-line fa-3x mb-3"></i>
+            <p>No HPM reports have been generated yet.</p>
+            <p>Use the "Generate Weekly Report" button on the HPM Items page to create your first report.</p>
+            <a href="{{ url_for('hpm_items') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-boxes me-2"></i>Go to HPM Items
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

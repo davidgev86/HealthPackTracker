@@ -177,7 +177,22 @@
                     </button>
                 </div>
             </div>
-
+            {% if user.role in ['admin', 'manager'] %}
+            <div class="col-md-6">
+                <label class="form-label">HPM Reporting & Archive</label>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success" onclick="generateHPMReport()">
+                        <i class="fas fa-chart-bar me-1"></i>Generate Weekly Report
+                    </button>
+                    <button class="btn btn-warning" onclick="confirmArchiveHPMWaste()">
+                        <i class="fas fa-archive me-1"></i>Archive Waste Log
+                    </button>
+                    <a href="{{ url_for('hpm_reports') }}" class="btn btn-info">
+                        <i class="fas fa-history me-1"></i>View Reports
+                    </a>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -426,6 +441,51 @@
         window.location.href = currentUrl.toString();
     }
     
+    function generateHPMReport() {
+        if (confirm('Generate a weekly HPM inventory and waste report? This will create a snapshot of current data.')) {
+            fetch('/generate_hpm_report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('HPM Weekly Report generated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error generating report: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error generating report: ' + error);
+            });
+        }
+    }
+    
+    function confirmArchiveHPMWaste() {
+        if (confirm('Archive HPM waste log entries? This will move all current HPM waste entries to the archive and reset the log. This action cannot be undone.')) {
+            fetch('/archive_hpm_waste', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('HPM Waste log archived successfully! ' + data.archived_count + ' entries archived.');
+                    location.reload();
+                } else {
+                    alert('Error archiving waste log: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error archiving waste log: ' + error);
+            });
+        }
+    }
 
 </script>
 {% endblock %}

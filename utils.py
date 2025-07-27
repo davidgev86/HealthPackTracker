@@ -913,3 +913,182 @@ def check_and_generate_inventory_report_if_needed():
     except Exception:
         # If report generation fails, don't break the application
         return False
+
+# HPM-specific reporting functions
+HPM_REPORTS_FILE = 'hpm_weekly_reports.csv'
+HPM_WASTE_ARCHIVE_DIR = 'hpm_waste_archive'
+
+def initialize_hpm_reports():
+    """Initialize HPM reports CSV file if it doesn't exist"""
+    if not os.path.exists(HPM_REPORTS_FILE):
+        with open(HPM_REPORTS_FILE, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=['date', 'total_items', 'total_value', 'low_stock_count', 'total_waste_value', 'top_waste_categories', 'comparison_notes'])
+            writer.writeheader()
+
+def initialize_hpm_waste_archive():
+    """Initialize HPM waste archive directory"""
+    if not os.path.exists(HPM_WASTE_ARCHIVE_DIR):
+        os.makedirs(HPM_WASTE_ARCHIVE_DIR)
+
+def generate_hpm_weekly_report():
+    """Generate a manual HPM weekly report"""
+    from models import HPMWeeklyReport
+    
+    current_date = datetime.now()
+    all_items = read_inventory()
+    
+    # Get HPM items only
+    hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
+    
+    # Get HPM waste entries
+    all_waste_entries = read_waste_log()
+    hpm_waste_entries = [entry for entry in all_waste_entries if any(item.name == entry.item_name for item in hpm_items)]
+    
+    # Calculate stats
+    total_items = len(hpm_items)
+    total_value = sum(item.total_value() for item in hpm_items)
+    low_stock_count = len([item for item in hpm_items if item.is_low_stock()])
+    total_waste_value = sum(entry.waste_value() for entry in hpm_waste_entries)
+    
+    # Get top waste categories
+    waste_by_category = {}
+    inventory_dict = {item.name: item for item in hpm_items}
+    for entry in hpm_waste_entries:
+        item = inventory_dict.get(entry.item_name)
+        if item:
+            category = item.category
+            waste_by_category[category] = waste_by_category.get(category, 0) + entry.waste_value()
+    
+    # Format top categories
+    sorted_categories = sorted(waste_by_category.items(), key=lambda x: x[1], reverse=True)
+    top_categories = ', '.join([f"{cat}: ${val:.2f}" for cat, val in sorted_categories[:3]])
+    
+    # Generate comparison notes with previous report
+    comparison_notes = generate_hpm_comparison_notes(total_items, total_value, low_stock_count, total_waste_value)
+    
+    return HPMWeeklyReport(
+        date=current_date.strftime('%Y-%m-%d %H:%M:%S'),
+        total_items=total_items,
+        total_value=total_value,
+        low_stock_count=low_stock_count,
+        total_waste_value=total_waste_value,
+        top_waste_categories=top_categories,
+        comparison_notes=comparison_notes
+    )
+
+def save_hpm_report(report):
+    """Save HPM report to file"""
+    initialize_hpm_reports()
+    with open(HPM_REPORTS_FILE, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['date', 'total_items', 'total_value', 'low_stock_count', 'total_waste_value', 'top_waste_categories', 'comparison_notes'])
+        writer.writerow(report.to_dict())
+
+def read_hpm_reports():
+    """Read HPM reports from file"""
+    from models import HPMWeeklyReport
+    
+    reports = []
+    if not os.path.exists(HPM_REPORTS_FILE):
+        return reports
+    
+    try:
+        with open(HPM_REPORTS_FILE, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                report = HPMWeeklyReport(
+                    date=row['date'],
+                    total_items=int(row['total_items']),
+                    total_value=float(row['total_value']),
+                    low_stock_count=int(row['low_stock_count']),
+                    total_waste_value=float(row['total_waste_value']),
+                    top_waste_categories=row['top_waste_categories'],
+                    comparison_notes=row['comparison_notes']
+                )
+                reports.append(report)
+    except Exception:
+        pass
+    
+    return reports
+
+def generate_hpm_comparison_notes(current_items, current_value, current_low_stock, current_waste):
+    """Generate comparison notes with previous HPM report"""
+    previous_reports = read_hpm_reports()
+    if not previous_reports:
+        return "First HPM report generated"
+    
+    last_report = previous_reports[-1]
+    
+    notes = []
+    
+    # Items comparison
+    item_diff = current_items - last_report.total_items
+    if item_diff > 0:
+        notes.append(f"+{item_diff} items")
+    elif item_diff < 0:
+        notes.append(f"{item_diff} items")
+    
+    # Value comparison
+    value_diff = current_value - last_report.total_value
+    if abs(value_diff) > 1:  # Only note significant changes
+        if value_diff > 0:
+            notes.append(f"+${value_diff:.2f} inventory value")
+        else:
+            notes.append(f"-${abs(value_diff):.2f} inventory value")
+    
+    # Low stock comparison
+    stock_diff = current_low_stock - last_report.low_stock_count
+    if stock_diff > 0:
+        notes.append(f"+{stock_diff} low stock items")
+    elif stock_diff < 0:
+        notes.append(f"{abs(stock_diff)} fewer low stock items")
+    
+    # Waste comparison
+    waste_diff = current_waste - last_report.total_waste_value
+    if abs(waste_diff) > 1:  # Only note significant changes
+        if waste_diff > 0:
+            notes.append(f"+${waste_diff:.2f} waste value")
+        else:
+            notes.append(f"-${abs(waste_diff):.2f} waste value")
+    
+    return "; ".join(notes) if notes else "No significant changes"
+
+def archive_hpm_waste_log():
+    """Archive HPM waste log entries and remove them from main log"""
+    initialize_hpm_waste_archive()
+    
+    # Read all waste entries
+    all_waste_entries = read_waste_log()
+    all_items = read_inventory()
+    
+    # Get HPM items
+    hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
+    hpm_item_names = set(item.name for item in hpm_items)
+    
+    # Separate HPM and non-HPM waste entries
+    hpm_waste_entries = [entry for entry in all_waste_entries if entry.item_name in hpm_item_names]
+    non_hpm_waste_entries = [entry for entry in all_waste_entries if entry.item_name not in hpm_item_names]
+    
+    if not hpm_waste_entries:
+        return 0  # No HPM waste entries to archive
+    
+    # Create archive file with timestamp
+    current_date = datetime.now()
+    archive_filename = f"hpm_waste_log_{current_date.strftime('%Y%m%d_%H%M%S')}.csv"
+    archive_path = os.path.join(HPM_WASTE_ARCHIVE_DIR, archive_filename)
+    
+    # Write HPM waste entries to archive
+    with open(archive_path, 'w', newline='') as file:
+        if hpm_waste_entries:
+            writer = csv.DictWriter(file, fieldnames=['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost'])
+            writer.writeheader()
+            for entry in hpm_waste_entries:
+                writer.writerow(entry.to_dict())
+    
+    # Rewrite main waste log with only non-HPM entries
+    with open(WASTE_LOG_FILE, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['item_name', 'quantity', 'unit', 'reason', 'date', 'logged_by', 'unit_cost'])
+        writer.writeheader()
+        for entry in non_hpm_waste_entries:
+            writer.writerow(entry.to_dict())
+    
+    return len(hpm_waste_entries)

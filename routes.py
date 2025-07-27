@@ -920,4 +920,54 @@ def hpm_items():
                          low_stock_filter=low_stock_filter,
                          user=user)
 
+@app.route('/generate_hpm_report', methods=['POST'])
+@require_permission('edit')
+def generate_hpm_report():
+    """Generate manual HPM weekly report"""
+    try:
+        from utils import generate_hpm_weekly_report, save_hpm_report
+        
+        report = generate_hpm_weekly_report()
+        save_hpm_report(report)
+        
+        return jsonify({'success': True, 'message': 'HPM report generated successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/archive_hpm_waste', methods=['POST'])
+@require_permission('edit')
+def archive_hpm_waste():
+    """Archive HPM waste log entries"""
+    try:
+        from utils import archive_hpm_waste_log
+        
+        archived_count = archive_hpm_waste_log()
+        
+        return jsonify({'success': True, 'archived_count': archived_count, 'message': f'{archived_count} HPM waste entries archived'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/hpm_reports')
+@require_permission('view')
+def hpm_reports():
+    """View HPM weekly reports with week-to-week comparison"""
+    from utils import read_hpm_reports
+    
+    reports = read_hpm_reports()
+    
+    # Calculate week-to-week comparisons
+    for i in range(1, len(reports)):
+        current = reports[i]
+        previous = reports[i-1]
+        
+        # Add comparison data to current report
+        current.items_change = current.total_items - previous.total_items
+        current.value_change = current.total_value - previous.total_value
+        current.low_stock_change = current.low_stock_count - previous.low_stock_count
+        current.waste_change = current.total_waste_value - previous.total_waste_value
+    
+    user = get_user(session['username'])
+    
+    return render_template('hpm_reports.html', reports=reports, user=user)
+
 
