@@ -900,9 +900,24 @@ def hpm_items():
     total_waste_value = sum(entry.waste_value() for entry in filtered_waste_entries)
     low_stock_count = len(filtered_low_stock)
     
-    # Get categories for filter dropdown - include all available categories, not just ones in use
-    categories = get_category_names()
-    categories.sort()
+    # Get categories for filter dropdown - include HPM-relevant categories
+    all_hpm_items = [item for item in all_items if 'HPM' in item.get_vendors()]
+    used_categories = set(item.category for item in all_hpm_items)
+    
+    # Also include categories that are specifically HPM-related (contain "HPM", "Frozen", "Chef", etc.)
+    all_categories = get_category_names()
+    hpm_related_keywords = ['HPM', 'Frozen', 'Chef', 'Healthy', 'Meal', 'Choice', 'Beef', 'Chicken', 'Turkey', 'Seafood']
+    hpm_relevant_categories = set()
+    
+    for category in all_categories:
+        # Include if already used by HPM items
+        if category in used_categories:
+            hpm_relevant_categories.add(category)
+        # Include if contains HPM-related keywords (case insensitive)
+        elif any(keyword.lower() in category.lower() for keyword in hpm_related_keywords):
+            hpm_relevant_categories.add(category)
+    
+    categories = sorted(list(hpm_relevant_categories))
     
     user = get_user(session['username'])
     
