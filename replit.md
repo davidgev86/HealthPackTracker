@@ -119,6 +119,7 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
+- July 27, 2025. Added delete HPM items functionality with confirmation modal for managers and admins
 - July 27, 2025. Added "Add HPM Item" functionality directly from HPM Items page with comprehensive form and HPM vendor auto-assignment
 - July 27, 2025. Added category management functionality to HPM Items page allowing managers/admins to add and delete categories (including default categories)
 - July 27, 2025. Removed restrictions on deleting default categories per user preference for full customization control

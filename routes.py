@@ -1103,4 +1103,33 @@ def add_inventory_item():
         flash(f'Error adding item: {str(e)}', 'danger')
         return redirect(request.referrer or url_for('inventory'))
 
+@app.route('/delete_inventory_item', methods=['POST'])
+@require_permission('delete')
+def delete_inventory_item():
+    """Delete an inventory item"""
+    try:
+        data = request.get_json()
+        item_name = data.get('name', '').strip()
+        
+        if not item_name:
+            return jsonify({'success': False, 'error': 'Item name is required'})
+        
+        # Read current inventory
+        items = read_inventory()
+        
+        # Find and remove the item
+        original_count = len(items)
+        items = [item for item in items if item.name != item_name]
+        
+        if len(items) == original_count:
+            return jsonify({'success': False, 'error': f'Item "{item_name}" not found'})
+        
+        # Write updated inventory
+        write_inventory(items)
+        
+        return jsonify({'success': True, 'message': f'Item "{item_name}" deleted successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 
