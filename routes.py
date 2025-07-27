@@ -1052,4 +1052,55 @@ def delete_category_route():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/add_inventory_item', methods=['POST'])
+@require_permission('edit')
+def add_inventory_item():
+    """Add a new inventory item"""
+    try:
+        name = request.form['name'].strip()
+        unit = request.form['unit'].strip()
+        quantity = float(request.form['quantity'])
+        par_level = int(request.form['par_level'])
+        category = request.form.get('category', 'General').strip()
+        unit_cost = float(request.form.get('unit_cost', 0.0))
+        vendors = request.form.get('vendors', '').strip()
+        
+        if not name or not unit:
+            flash('Item name and unit are required.', 'danger')
+            return redirect(request.referrer or url_for('inventory'))
+        
+        # Check if item already exists
+        existing_item = get_inventory_item(name)
+        if existing_item:
+            flash(f'Item "{name}" already exists.', 'danger')
+            return redirect(request.referrer or url_for('inventory'))
+        
+        # Create new inventory item
+        from models import InventoryItem
+        new_item = InventoryItem(
+            name=name,
+            unit=unit,
+            quantity=quantity,
+            par_level=par_level,
+            category=category,
+            unit_cost=unit_cost,
+            vendors=vendors,
+            last_updated=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        )
+        
+        # Add to inventory
+        items = read_inventory()
+        items.append(new_item)
+        write_inventory(items)
+        
+        flash(f'Item "{name}" added successfully!', 'success')
+        return redirect(request.referrer or url_for('inventory'))
+        
+    except ValueError as e:
+        flash(f'Invalid input: {str(e)}', 'danger')
+        return redirect(request.referrer or url_for('inventory'))
+    except Exception as e:
+        flash(f'Error adding item: {str(e)}', 'danger')
+        return redirect(request.referrer or url_for('inventory'))
+
 

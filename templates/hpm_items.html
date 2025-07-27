@@ -499,7 +499,7 @@
 <div class="modal fade" id="addItemModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form action="{{ url_for('add_inventory_item') }}" method="post" onsubmit="addHPMItem(event)">
+            <form action="{{ url_for('add_inventory_item') }}" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Add New HPM Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -804,35 +804,7 @@
         new bootstrap.Modal(document.getElementById('addItemModal')).show();
     }
     
-    function addHPMItem(event) {
-        event.preventDefault();
-        
-        const form = event.target;
-        const formData = new FormData(form);
-        
-        // Ensure HPM is in the vendors field
-        if (!formData.get('vendors').includes('HPM')) {
-            formData.set('vendors', 'HPM, ' + formData.get('vendors'));
-        }
-        
-        fetch(form.action, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('HPM Item added successfully!');
-                location.reload();
-            } else {
-                alert('Error adding item. Please try again.');
-            }
-        })
-        .catch(error => {
-            alert('Error adding item: ' + error);
-        });
-        
-        bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
-    }
+    // Form will submit normally and redirect will handle success/error messages
 
 </script>
 {% endblock %}
