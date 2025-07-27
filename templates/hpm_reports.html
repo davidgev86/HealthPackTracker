@@ -176,7 +176,7 @@
                         {% if report.value_change > 1 %}
                             <span class="change-indicator change-positive">+${{ "%.2f"|format(report.value_change) }}</span>
                         {% elif report.value_change < -1 %}
-                            <span class="change-indicator change-negative">-${{ "%.2f"|format(abs(report.value_change)) }}</span>
+                            <span class="change-indicator change-negative">-${{ "%.2f"|format(report.abs_value_change) }}</span>
                         {% else %}
                             <span class="change-indicator change-neutral">~$0</span>
                         {% endif %}
@@ -204,7 +204,7 @@
                         {% if report.waste_change > 1 %}
                             <span class="change-indicator change-positive">+${{ "%.2f"|format(report.waste_change) }}</span>
                         {% elif report.waste_change < -1 %}
-                            <span class="change-indicator change-negative">-${{ "%.2f"|format(abs(report.waste_change)) }}</span>
+                            <span class="change-indicator change-negative">-${{ "%.2f"|format(report.abs_waste_change) }}</span>
                         {% else %}
                             <span class="change-indicator change-neutral">~$0</span>
                         {% endif %}

@@ -966,6 +966,10 @@ def hpm_reports():
             report.value_change = report.total_value - previous.total_value
             report.low_stock_change = report.low_stock_count - previous.low_stock_count
             report.waste_change = report.total_waste_value - previous.total_waste_value
+            
+            # Add absolute values for template display
+            report.abs_value_change = abs(report.value_change)
+            report.abs_waste_change = abs(report.waste_change)
         
         # Parse waste details JSON
         try:
