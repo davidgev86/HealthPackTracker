@@ -952,19 +952,26 @@ def archive_hpm_waste():
 def hpm_reports():
     """View HPM weekly reports with week-to-week comparison"""
     from utils import read_hpm_reports
+    import json
     
     reports = read_hpm_reports()
     
-    # Calculate week-to-week comparisons
-    for i in range(1, len(reports)):
-        current = reports[i]
-        previous = reports[i-1]
+    # Calculate week-to-week comparisons and parse waste details
+    for i, report in enumerate(reports):
+        if i > 0:
+            previous = reports[i-1]
+            
+            # Add comparison data to current report
+            report.items_change = report.total_items - previous.total_items
+            report.value_change = report.total_value - previous.total_value
+            report.low_stock_change = report.low_stock_count - previous.low_stock_count
+            report.waste_change = report.total_waste_value - previous.total_waste_value
         
-        # Add comparison data to current report
-        current.items_change = current.total_items - previous.total_items
-        current.value_change = current.total_value - previous.total_value
-        current.low_stock_change = current.low_stock_count - previous.low_stock_count
-        current.waste_change = current.total_waste_value - previous.total_waste_value
+        # Parse waste details JSON
+        try:
+            report.parsed_waste_details = json.loads(report.waste_details) if report.waste_details else []
+        except:
+            report.parsed_waste_details = []
     
     user = get_user(session['username'])
     

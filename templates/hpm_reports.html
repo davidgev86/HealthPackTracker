@@ -219,6 +219,50 @@
             </div>
             {% endif %}
             
+            {% if report.parsed_waste_details and report.parsed_waste_details|length > 0 %}
+            <div class="waste-details mt-3">
+                <h6><i class="fas fa-trash-alt me-2"></i>Wasted HPM Meals Details:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-dark">
+                        <thead>
+                            <tr>
+                                <th>Meal Item</th>
+                                <th>Quantity</th>
+                                <th>Value</th>
+                                <th>Reason</th>
+                                <th>Date</th>
+                                <th>User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report.parsed_waste_details[:10] %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.item_name }}</strong>
+                                    <br><small class="text-muted">{{ item.category }}</small>
+                                </td>
+                                <td>{{ item.quantity }} {{ item.unit }}</td>
+                                <td class="text-danger">${{ "%.2f"|format(item.waste_value|float) }}</td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">{{ item.reason }}</span>
+                                </td>
+                                <td><small>{{ item.date }}</small></td>
+                                <td><small>{{ item.user }}</small></td>
+                            </tr>
+                            {% endfor %}
+                            {% if report.parsed_waste_details|length > 10 %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <em>... and {{ report.parsed_waste_details|length - 10 }} more waste entries</em>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
             {% if report.comparison_notes %}
             <div class="comparison-notes">
                 <strong><i class="fas fa-chart-line me-2"></i>Week-to-Week Analysis:</strong>

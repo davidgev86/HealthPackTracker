@@ -206,6 +206,7 @@ class HPMWeeklyReport:
     low_stock_count: int
     total_waste_value: float
     top_waste_categories: str
+    waste_details: str = ''  # JSON string containing detailed waste information
     comparison_notes: str = ''
     
     def to_dict(self) -> dict:
@@ -217,5 +218,6 @@ class HPMWeeklyReport:
             'low_stock_count': str(self.low_stock_count),
             'total_waste_value': str(self.total_waste_value),
             'top_waste_categories': self.top_waste_categories,
+            'waste_details': self.waste_details,
             'comparison_notes': self.comparison_notes
         }

@@ -922,7 +922,7 @@ def initialize_hpm_reports():
     """Initialize HPM reports CSV file if it doesn't exist"""
     if not os.path.exists(HPM_REPORTS_FILE):
         with open(HPM_REPORTS_FILE, 'w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=['date', 'total_items', 'total_value', 'low_stock_count', 'total_waste_value', 'top_waste_categories', 'comparison_notes'])
+            writer = csv.DictWriter(file, fieldnames=['date', 'total_items', 'total_value', 'low_stock_count', 'total_waste_value', 'top_waste_categories', 'waste_details', 'comparison_notes'])
             writer.writeheader()
 
 def initialize_hpm_waste_archive():
@@ -933,6 +933,7 @@ def initialize_hpm_waste_archive():
 def generate_hpm_weekly_report():
     """Generate a manual HPM weekly report"""
     from models import HPMWeeklyReport
+    import json
     
     current_date = datetime.now()
     all_items = read_inventory()
@@ -963,6 +964,27 @@ def generate_hpm_weekly_report():
     sorted_categories = sorted(waste_by_category.items(), key=lambda x: x[1], reverse=True)
     top_categories = ', '.join([f"{cat}: ${val:.2f}" for cat, val in sorted_categories[:3]])
     
+    # Create detailed waste information
+    waste_details = []
+    for entry in hpm_waste_entries:
+        item = inventory_dict.get(entry.item_name)
+        if item:
+            waste_details.append({
+                'item_name': entry.item_name,
+                'quantity': str(entry.quantity),
+                'unit': item.unit,
+                'cost_per_unit': str(item.cost_per_unit),
+                'waste_value': str(entry.waste_value()),
+                'reason': entry.reason,
+                'date': entry.date,
+                'user': entry.user,
+                'category': item.category
+            })
+    
+    # Sort waste details by value (highest first)
+    waste_details.sort(key=lambda x: float(x['waste_value']), reverse=True)
+    waste_details_json = json.dumps(waste_details)
+    
     # Generate comparison notes with previous report
     comparison_notes = generate_hpm_comparison_notes(total_items, total_value, low_stock_count, total_waste_value)
     
@@ -973,6 +995,7 @@ def generate_hpm_weekly_report():
         low_stock_count=low_stock_count,
         total_waste_value=total_waste_value,
         top_waste_categories=top_categories,
+        waste_details=waste_details_json,
         comparison_notes=comparison_notes
     )
 
@@ -980,7 +1003,7 @@ def save_hpm_report(report):
     """Save HPM report to file"""
     initialize_hpm_reports()
     with open(HPM_REPORTS_FILE, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['date', 'total_items', 'total_value', 'low_stock_count', 'total_waste_value', 'top_waste_categories', 'comparison_notes'])
+        writer = csv.DictWriter(file, fieldnames=['date', 'total_items', 'total_value', 'low_stock_count', 'total_waste_value', 'top_waste_categories', 'waste_details', 'comparison_notes'])
         writer.writerow(report.to_dict())
 
 def read_hpm_reports():
@@ -1002,6 +1025,7 @@ def read_hpm_reports():
                     low_stock_count=int(row['low_stock_count']),
                     total_waste_value=float(row['total_waste_value']),
                     top_waste_categories=row['top_waste_categories'],
+                    waste_details=row.get('waste_details', '[]'),
                     comparison_notes=row['comparison_notes']
                 )
                 reports.append(report)
