@@ -1137,7 +1137,12 @@ def delete_inventory_item():
 def add_category_api():
     """Add a new category from inventory page"""
     try:
-        category_name = request.form.get('category_name', '').strip()
+        # Handle both form data and JSON
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            category_name = data.get('category_name', '').strip() if data else ''
+        else:
+            category_name = request.form.get('category_name', '').strip()
         
         if not category_name:
             return jsonify({'success': False, 'message': 'Category name is required'})
@@ -1165,7 +1170,12 @@ def add_category_api():
 def delete_category_api():
     """Delete a category from inventory page"""
     try:
-        category_name = request.form.get('category_name', '').strip()
+        # Handle both form data and JSON
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            category_name = data.get('category_name', '').strip() if data else ''
+        else:
+            category_name = request.form.get('category_name', '').strip()
         
         if not category_name:
             return jsonify({'success': False, 'message': 'Category name is required'})
