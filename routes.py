@@ -1170,24 +1170,15 @@ def add_category_api():
 def delete_category_api():
     """Delete a category from inventory page"""
     try:
-        # Simple and robust JSON handling
-        category_name = ''
+        print(f"[DELETE_CATEGORY] Request method: {request.method}")
+        print(f"[DELETE_CATEGORY] Content-Type: {request.content_type}")
+        print(f"[DELETE_CATEGORY] Is JSON: {request.is_json}")
+        print(f"[DELETE_CATEGORY] Form data: {dict(request.form)}")
+        print(f"[DELETE_CATEGORY] Raw data: {request.get_data()}")
         
-        try:
-            # Try to get JSON data
-            if request.is_json:
-                data = request.get_json()
-                category_name = data.get('category_name', '') if data else ''
-            else:
-                # Fallback to form data
-                category_name = request.form.get('category_name', '')
-            
-            category_name = category_name.strip()
-            print(f"[DELETE_CATEGORY] Received category: '{category_name}'")  # Simple console output
-            
-        except Exception as e:
-            print(f"[DELETE_CATEGORY] Error parsing request: {e}")
-            return jsonify({'success': False, 'message': f'Request parsing error: {str(e)}'})
+        # Get category name from form data (since we're sending FormData)
+        category_name = request.form.get('category_name', '').strip()
+        print(f"[DELETE_CATEGORY] Extracted category: '{category_name}'")
         
         if not category_name:
             return jsonify({'success': False, 'message': 'Category name is required'})
