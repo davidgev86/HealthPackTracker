@@ -1132,4 +1132,64 @@ def delete_inventory_item():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/add_category', methods=['POST'])
+@require_permission('edit')
+def add_category_api():
+    """Add a new category from inventory page"""
+    try:
+        category_name = request.form.get('category_name', '').strip()
+        
+        if not category_name:
+            return jsonify({'success': False, 'message': 'Category name is required'})
+        
+        # Read current categories
+        categories = read_categories()
+        
+        # Check if category already exists
+        if category_name in [cat.name for cat in categories]:
+            return jsonify({'success': False, 'message': f'Category "{category_name}" already exists'})
+        
+        # Add new category
+        from models import Category
+        new_category = Category(category_name)
+        categories.append(new_category)
+        write_categories(categories)
+        
+        return jsonify({'success': True, 'message': f'Category "{category_name}" added successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/delete_category', methods=['POST'])
+@require_permission('edit')
+def delete_category_api():
+    """Delete a category from inventory page"""
+    try:
+        category_name = request.form.get('category_name', '').strip()
+        
+        if not category_name:
+            return jsonify({'success': False, 'message': 'Category name is required'})
+        
+        # Check if category is in use
+        if is_category_in_use(category_name):
+            return jsonify({'success': False, 'message': f'Cannot delete category "{category_name}" because it is being used by inventory items'})
+        
+        # Read current categories
+        categories = read_categories()
+        
+        # Find and remove the category
+        original_count = len(categories)
+        categories = [cat for cat in categories if cat.name != category_name]
+        
+        if len(categories) == original_count:
+            return jsonify({'success': False, 'message': f'Category "{category_name}" not found'})
+        
+        # Write updated categories
+        write_categories(categories)
+        
+        return jsonify({'success': True, 'message': f'Category "{category_name}" deleted successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 
