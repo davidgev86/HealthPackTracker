@@ -4,18 +4,23 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-boxes me-2"></i>Inventory Management</h2>
+    <h2><i class="fas fa-boxes me-2"></i>Inventory Management<br>
+        <small class="text-muted">Gestión de Inventario</small>
+    </h2>
     <div class="btn-group">
         {% if user.has_permission('edit') %}
         <a href="{{ url_for('add_item') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add Item
+            <i class="fas fa-plus me-2"></i>Add Item<br>
+            <small>Agregar Artículo</small>
         </a>
         <a href="{{ url_for('vendors') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-truck me-2"></i>Vendors
+            <i class="fas fa-truck me-2"></i>Vendors<br>
+            <small>Proveedores</small>
         </a>
 
         <a href="{{ url_for('categories') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-tags me-2"></i>Categories
+            <i class="fas fa-tags me-2"></i>Categories<br>
+            <small>Categorías</small>
         </a>
         {% endif %}
     </div>
@@ -26,7 +31,9 @@
     <div class="col-md-3">
         <div class="card bg-primary text-white">
             <div class="card-body">
-                <h5 class="card-title">Total Items</h5>
+                <h5 class="card-title">Total Items<br>
+                    <small>Total Artículos</small>
+                </h5>
                 <h3>{{ all_items|length if all_items else items|length }}</h3>
             </div>
         </div>
@@ -34,7 +41,9 @@
     <div class="col-md-3">
         <div class="card bg-warning text-dark">
             <div class="card-body">
-                <h5 class="card-title">Low Stock</h5>
+                <h5 class="card-title">Low Stock<br>
+                    <small>Poco Stock</small>
+                </h5>
                 <h3>{{ low_stock_count }}</h3>
             </div>
         </div>
@@ -42,7 +51,9 @@
     <div class="col-md-3">
         <div class="card bg-info text-white">
             <div class="card-body">
-                <h5 class="card-title">Categories</h5>
+                <h5 class="card-title">Categories<br>
+                    <small>Categorías</small>
+                </h5>
                 <h3>{{ (all_items|map(attribute='category')|unique|list|length) if all_items else (items|map(attribute='category')|unique|list|length) }}</h3>
             </div>
         </div>
@@ -50,7 +61,9 @@
     <div class="col-md-3">
         <div class="card bg-success text-white">
             <div class="card-body">
-                <h5 class="card-title">Total Value</h5>
+                <h5 class="card-title">Total Value<br>
+                    <small>Valor Total</small>
+                </h5>
                 <h3>${{ "%.2f"|format(total_value) }}</h3>
             </div>
         </div>
@@ -60,7 +73,9 @@
 <!-- Filter Controls -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">Filter & Actions</h5>
+        <h5 class="mb-0">Filter & Actions<br>
+            <small class="text-muted">Filtros y Acciones</small>
+        </h5>
     </div>
     <div class="card-body">
         <div class="row">
