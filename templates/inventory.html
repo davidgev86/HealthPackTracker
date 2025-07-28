@@ -524,6 +524,7 @@ function deleteCategory(categoryName) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'same-origin', // Include cookies/session
         body: JSON.stringify({category_name: categoryName})
     })
     .then(response => {
@@ -574,6 +575,7 @@ function addCategory() {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'same-origin', // Include cookies/session
         body: JSON.stringify({category_name: categoryName})
     })
     .then(response => {
