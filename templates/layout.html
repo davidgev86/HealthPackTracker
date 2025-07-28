@@ -25,37 +25,43 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('hpm_items') }}">
-                            <i class="fas fa-star me-1"></i>HPM Items
+                            <i class="fas fa-star me-1"></i>HPM Items<br>
+                            <small class="text-muted">Artículos HPM</small>
                         </a>
                     </li>
                     {% if session.role in ['admin', 'manager'] %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('vendors') }}">
-                            <i class="fas fa-truck me-1"></i>Vendors
+                            <i class="fas fa-truck me-1"></i>Vendors<br>
+                            <small class="text-muted">Proveedores</small>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('categories') }}">
-                            <i class="fas fa-tags me-1"></i>Categories
+                            <i class="fas fa-tags me-1"></i>Categories<br>
+                            <small class="text-muted">Categorías</small>
                         </a>
                     </li>
                     {% endif %}
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('waste_log') }}">
-                            <i class="fas fa-trash me-1"></i>Waste Log
+                            <i class="fas fa-trash me-1"></i>Waste Log<br>
+                            <small class="text-muted">Registro de Desperdicios</small>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('weekly_waste_reports') }}">
-                            <i class="fas fa-chart-line me-1"></i>Weekly Reports
+                            <i class="fas fa-chart-line me-1"></i>Weekly Reports<br>
+                            <small class="text-muted">Reportes Semanales</small>
                         </a>
                     </li>
                     {% if session.role in ['admin', 'manager'] %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('import_export') }}">
-                            <i class="fas fa-file-import me-1"></i>Import/Export
+                            <i class="fas fa-file-import me-1"></i>Import/Export<br>
+                            <small class="text-muted">Importar/Exportar</small>
                         </a>
                     </li>
                     {% endif %}
@@ -68,7 +74,8 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout<br>
+                                <small class="text-muted">Cerrar Sesión</small>
                             </a></li>
                         </ul>
                     </li>

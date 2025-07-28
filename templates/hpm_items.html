@@ -104,15 +104,19 @@
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-boxes me-2"></i>HPM Items Management</h2>
+    <h2><i class="fas fa-boxes me-2"></i>HPM Items Management<br>
+        <small class="text-muted">Gestión de Artículos HPM</small>
+    </h2>
     <div class="d-flex gap-2">
         {% if user.role in ['admin', 'manager'] %}
         <button class="btn btn-success" onclick="showAddItem()">
-            <i class="fas fa-plus me-2"></i>Add HPM Item
+            <i class="fas fa-plus me-2"></i>Add HPM Item<br>
+            <small>Agregar Artículo HPM</small>
         </button>
         {% endif %}
         <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
-            <i class="fas fa-warehouse me-2"></i>Main Inventory
+            <i class="fas fa-warehouse me-2"></i>Main Inventory<br>
+            <small>Inventario Principal</small>
         </a>
     </div>
 </div>
@@ -133,34 +137,46 @@
 <div class="hpm-stats">
     <div class="stat-card">
         <div class="stat-value">{{ total_items }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Items{% else %}Total HPM Items{% endif %}</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Items{% else %}Total HPM Items{% endif %}<br>
+            <small class="text-muted">{% if current_category %}Artículos {{ current_category }}{% else %}Total Artículos HPM{% endif %}</small>
+        </div>
     </div>
     <div class="stat-card">
         <div class="stat-value">${{ "%.2f"|format(total_value) }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Value{% else %}Total Inventory Value{% endif %}</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Value{% else %}Total Inventory Value{% endif %}<br>
+            <small class="text-muted">{% if current_category %}Valor {{ current_category }}{% else %}Valor Total Inventario{% endif %}</small>
+        </div>
     </div>
     <div class="stat-card">
         <div class="stat-value">{{ low_stock_count }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Low Stock{% else %}Low Stock Items{% endif %}</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Low Stock{% else %}Low Stock Items{% endif %}<br>
+            <small class="text-muted">{% if current_category %}{{ current_category }} Poco Stock{% else %}Artículos Poco Stock{% endif %}</small>
+        </div>
     </div>
     <div class="stat-card">
         <div class="stat-value">${{ "%.2f"|format(total_waste_value) }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Waste Value{% else %}Total Waste Value{% endif %}</div>
+        <div class="stat-label">{% if current_category %}{{ current_category }} Waste Value{% else %}Total Waste Value{% endif %}<br>
+            <small class="text-muted">{% if current_category %}Valor Desperdicio {{ current_category }}{% else %}Valor Total Desperdicios{% endif %}</small>
+        </div>
     </div>
 </div>
 
 <!-- Filter Controls -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">Filter & Actions</h5>
+        <h5 class="mb-0">Filter & Actions<br>
+            <small class="text-muted">Filtros y Acciones</small>
+        </h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-3">
-                <label class="form-label">Category</label>
+                <label class="form-label">Category<br>
+                    <small class="text-muted">Categoría</small>
+                </label>
                 <div class="d-flex gap-2">
                     <select class="form-select" onchange="applyFilter('category', this.value)">
-                        <option value="">All Categories</option>
+                        <option value="">All Categories / Todas las Categorías</option>
                         {% for category in categories %}
                         <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
                             {{ category }}
@@ -178,29 +194,38 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Stock Status</label>
+                <label class="form-label">Stock Status<br>
+                    <small class="text-muted">Estado de Stock</small>
+                </label>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-warning {% if low_stock_filter %}active{% endif %}" 
                             onclick="toggleLowStockFilter()">
-                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock<br>
+                        <small>Poco Stock</small>
                     </button>
                     <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                        <i class="fas fa-times me-1"></i>Clear
+                        <i class="fas fa-times me-1"></i>Clear<br>
+                        <small>Limpiar</small>
                     </button>
                 </div>
             </div>
             {% if user.role in ['admin', 'manager'] %}
             <div class="col-md-6">
-                <label class="form-label">HPM Reporting & Archive</label>
+                <label class="form-label">HPM Reporting & Archive<br>
+                    <small class="text-muted">Reportes y Archivo HPM</small>
+                </label>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success" onclick="generateHPMReport()">
-                        <i class="fas fa-chart-bar me-1"></i>Generate Weekly Report
+                        <i class="fas fa-chart-bar me-1"></i>Generate Weekly Report<br>
+                        <small>Generar Reporte Semanal</small>
                     </button>
                     <button class="btn btn-warning" onclick="confirmArchiveHPMWaste()">
-                        <i class="fas fa-archive me-1"></i>Archive Waste Log
+                        <i class="fas fa-archive me-1"></i>Archive Waste Log<br>
+                        <small>Archivar Registro Desperdicios</small>
                     </button>
                     <a href="{{ url_for('hpm_reports') }}" class="btn btn-info">
-                        <i class="fas fa-history me-1"></i>View Reports
+                        <i class="fas fa-history me-1"></i>View Reports<br>
+                        <small>Ver Reportes</small>
                     </a>
                 </div>
             </div>
@@ -219,12 +244,13 @@
                         <i class="fas fa-search"></i>
                     </span>
                     <input type="text" class="form-control" id="searchInput" 
-                           placeholder="Search HPM items by name..." 
+                           placeholder="Search HPM items by name... / Buscar artículos HPM por nombre..." 
                            onkeyup="searchItems()">
                 </div>
             </div>
             <div class="col-md-4 text-end">
-                <small class="text-muted" id="searchResults">Showing {{ hpm_items|length }} items</small>
+                <small class="text-muted" id="searchResults">Showing {{ hpm_items|length }} items<br>
+                    Mostrando {{ hpm_items|length }} artículos</small>
             </div>
         </div>
     </div>
@@ -234,7 +260,8 @@
 <div class="hpm-card">
     <h3>
         <i class="fas fa-boxes"></i>
-        HPM Inventory Items (<span id="visibleItemCount">{{ hpm_items|length }}</span>)
+        HPM Inventory Items (<span id="visibleItemCount">{{ hpm_items|length }}</span>)<br>
+        <small class="text-muted">Artículos de Inventario HPM (<span id="visibleItemCount">{{ hpm_items|length }}</span>)</small>
     </h3>
     
     {% if hpm_items %}
@@ -244,22 +271,25 @@
                     <div>
                         <span class="item-name">{{ item.name }}</span>
                         <span class="badge {{ 'low-stock' if item.is_low_stock() else 'in-stock' }}">
-                            {{ 'Low Stock' if item.is_low_stock() else 'In Stock' }}
+                            {{ 'Low Stock / Poco Stock' if item.is_low_stock() else 'In Stock / En Stock' }}
                         </span>
                     </div>
                     <div class="quick-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="showUpdateCount('{{ item.name }}', {{ item.quantity }}, '{{ item.unit }}')">
                             <i class="fas fa-edit"></i>
-                            Update Count
+                            Update Count<br>
+                            <small>Actualizar Cantidad</small>
                         </button>
                         <button class="btn btn-sm btn-outline-warning" onclick="showLogWaste('{{ item.name }}', '{{ item.unit }}')">
                             <i class="fas fa-trash"></i>
-                            Log Waste
+                            Log Waste<br>
+                            <small>Registrar Desperdicio</small>
                         </button>
                         {% if user.role in ['admin', 'manager'] %}
                         <button class="btn btn-sm btn-outline-danger" onclick="showDeleteItem('{{ item.name }}')">
                             <i class="fas fa-times"></i>
-                            Delete Item
+                            Delete Item<br>
+                            <small>Eliminar Artículo</small>
                         </button>
                         {% endif %}
                     </div>
@@ -267,25 +297,31 @@
                 
                 <div class="row">
                     <div class="col-md-3">
-                        <strong>Current Stock:</strong> {{ item.quantity }} {{ item.unit }}
+                        <strong>Current Stock:</strong> {{ item.quantity }} {{ item.unit }}<br>
+                        <small class="text-muted">Stock Actual:</small>
                     </div>
                     <div class="col-md-3">
-                        <strong>Par Level:</strong> {{ item.par_level }} {{ item.unit }}
+                        <strong>Par Level:</strong> {{ item.par_level }} {{ item.unit }}<br>
+                        <small class="text-muted">Nivel Mínimo:</small>
                     </div>
                     <div class="col-md-3">
-                        <strong>Unit Cost:</strong> ${{ "%.2f"|format(item.unit_cost) }}
+                        <strong>Unit Cost:</strong> ${{ "%.2f"|format(item.unit_cost) }}<br>
+                        <small class="text-muted">Costo por Unidad:</small>
                     </div>
                     <div class="col-md-3">
-                        <strong>Total Value:</strong> ${{ "%.2f"|format(item.total_value()) }}
+                        <strong>Total Value:</strong> ${{ "%.2f"|format(item.total_value()) }}<br>
+                        <small class="text-muted">Valor Total:</small>
                     </div>
                 </div>
                 
                 <div class="row mt-2">
                     <div class="col-md-6">
-                        <strong>Category:</strong> {{ item.category }}
+                        <strong>Category:</strong> {{ item.category }}<br>
+                        <small class="text-muted">Categoría:</small>
                     </div>
                     <div class="col-md-6">
-                        <strong>Last Updated:</strong> {{ item.last_updated or 'Never' }}
+                        <strong>Last Updated:</strong> {{ item.last_updated or 'Never' }}<br>
+                        <small class="text-muted">Última Actualización:</small>
                     </div>
                 </div>
             </div>
@@ -293,7 +329,8 @@
     {% else %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i>
-            No HPM items found. Items must have "HPM" as a vendor to appear here.
+            No HPM items found. Items must have "HPM" as a vendor to appear here.<br>
+            <small class="text-muted">No se encontraron artículos HPM. Los artículos deben tener "HPM" como proveedor para aparecer aquí.</small>
         </div>
     {% endif %}
 </div>
