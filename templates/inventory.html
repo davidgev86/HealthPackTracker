@@ -522,13 +522,27 @@ function deleteCategory(categoryName) {
         body: `category_name=${encodeURIComponent(categoryName)}`
     })
     .then(response => {
+        console.log('Delete response status:', response.status, 'URL:', response.url);
+        
+        // Check if we're being redirected to login (authentication issue)
+        if (response.status === 302 || response.url.includes('/login')) {
+            throw new Error('Authentication required. Please refresh the page and log in again.\nAutenticación requerida. Por favor actualiza la página e inicia sesión nuevamente.');
+        }
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        // Check if response is actually JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Invalid response format. Please refresh the page and try again.\nFormato de respuesta inválido. Por favor actualiza la página e intenta nuevamente.');
+        }
+        
         return response.json();
     })
     .then(data => {
-        console.log('Delete response:', data); // Debug log
+        console.log('Delete response data:', data); // Debug log
         if (data.success) {
             alert('Category deleted successfully!\nCategoría eliminada exitosamente!');
             location.reload();
