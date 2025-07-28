@@ -141,14 +141,6 @@
                         </option>
                         {% endfor %}
                     </select>
-                    {% if user.has_permission('edit') %}
-                    <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category / Agregar Categoría" style="min-width: 35px;">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="showDeleteCategoryModal()" title="Delete Category / Eliminar Categoría" style="min-width: 35px;">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    {% endif %}
                 </div>
             </div>
             <div class="col-lg-2 col-md-6">
@@ -498,137 +490,9 @@ function updateSearchResults(count, searchTerm) {
     }
 }
 
-// Category management functions
-function showDeleteCategoryModal() {
-    const categorySelect = document.querySelector('select[onchange*="category"]');
-    const selectedCategory = categorySelect.value;
-    
-    console.log('Selected category for deletion:', selectedCategory); // Debug log
-    console.log('All options in select:', Array.from(categorySelect.options).map(opt => `"${opt.value}": "${opt.text}"`)); // Debug log
-    
-    if (!selectedCategory || selectedCategory === '') {
-        alert('Please select a specific category to delete (not "All Categories").\nPor favor selecciona una categoría específica para eliminar (no "Todas las Categorías").');
-        return;
-    }
-    
-    if (confirm(`Are you sure you want to delete the category "${selectedCategory}"?\n¿Estás seguro de que quieres eliminar la categoría "${selectedCategory}"?`)) {
-        deleteCategory(selectedCategory);
-    }
-}
-
-function deleteCategory(categoryName) {
-    console.log('Deleting category:', categoryName); // Debug log
-    
-    // Use a simple form-based approach that's more reliable
-    const formData = new FormData();
-    formData.append('category_name', categoryName);
-    
-    fetch(`/delete_category`, {
-        method: 'POST',
-        credentials: 'same-origin', // Include cookies/session
-        body: formData
-    })
-    .then(response => {
-        console.log('Delete response status:', response.status, 'URL:', response.url);
-        
-        // Check if we're being redirected to login (authentication issue)
-        if (response.status === 302 || response.url.includes('/login')) {
-            throw new Error('Authentication required. Please refresh the page and log in again.\nAutenticación requerida. Por favor actualiza la página e inicia sesión nuevamente.');
-        }
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        // Check if response is actually JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Invalid response format. Please refresh the page and try again.\nFormato de respuesta inválido. Por favor actualiza la página e intenta nuevamente.');
-        }
-        
-        return response.json();
-    })
-    .then(data => {
-        console.log('Delete response data:', data); // Debug log
-        if (data.success) {
-            alert('Category deleted successfully!\nCategoría eliminada exitosamente!');
-            location.reload();
-        } else {
-            alert('Error deleting category: ' + (data.message || 'Unknown error') + '\nError al eliminar categoría: ' + (data.message || 'Error desconocido'));
-        }
-    })
-    .catch(error => {
-        console.error('Delete category error:', error);
-        alert('Error deleting category: ' + error.message + '\nError al eliminar categoría: ' + error.message);
-    });
-}
-
-function addCategory() {
-    const categoryName = document.getElementById('newCategoryName').value.trim();
-    
-    if (!categoryName) {
-        alert('Please enter a category name.\nPor favor ingresa un nombre de categoría.');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('category_name', categoryName);
-    
-    fetch('/add_category', {
-        method: 'POST',
-        credentials: 'same-origin', // Include cookies/session
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Add response:', data); // Debug log
-        if (data.success) {
-            alert('Category added successfully!\nCategoría agregada exitosamente!');
-            location.reload();
-        } else {
-            alert('Error adding category: ' + (data.message || 'Unknown error') + '\nError al agregar categoría: ' + (data.message || 'Error desconocido'));
-        }
-    })
-    .catch(error => {
-        console.error('Add category error:', error);
-        alert('Error adding category: ' + error.message + '\nError al agregar categoría: ' + error.message);
-    });
-}
+// Category management functions removed - use Categories page instead
 </script>
 
-<!-- Add Category Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addCategoryModalLabel">Add New Category<br>
-                    <small class="text-muted">Agregar Nueva Categoría</small>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="newCategoryName" class="form-label">Category Name<br>
-                        <small class="text-muted">Nombre de la Categoría</small>
-                    </label>
-                    <input type="text" class="form-control" id="newCategoryName" placeholder="Enter category name / Ingresa el nombre de la categoría">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel<br>
-                    <small>Cancelar</small>
-                </button>
-                <button type="button" class="btn btn-primary" onclick="addCategory()">Add Category<br>
-                    <small>Agregar Categoría</small>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Category management moved to Categories page -->
 
 {% endblock %}
