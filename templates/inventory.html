@@ -123,6 +123,12 @@
     <div class="card-body filter-section">
         <div class="row g-3">
             <div class="col-lg-3 col-md-6">
+                <label class="form-label">Search Items<br>
+                    <small class="text-muted">Buscar Artículos</small>
+                </label>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search by item name... / Buscar por nombre..." onkeyup="filterItems()">
+            </div>
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label">Category<br>
                     <small class="text-muted">Categoría</small>
                 </label>
@@ -145,7 +151,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-6">
                 <label class="form-label">Vendor<br>
                     <small class="text-muted">Proveedor</small>
                 </label>
@@ -158,7 +164,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-6">
                 <label class="form-label">Stock Status<br>
                     <small class="text-muted">Estado del Stock</small>
                 </label>
@@ -174,7 +180,7 @@
                     </button>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-6">
                 <label class="form-label">Actions<br>
                     <small class="text-muted">Acciones</small>
                 </label>
@@ -433,11 +439,63 @@ function toggleLowStockFilter() {
 }
 
 function clearFilters() {
+    // Clear search input
+    document.getElementById('searchInput').value = '';
+    
+    // Show all table rows
+    filterItems();
+    
+    // Clear URL filters
     const url = new URL(window.location);
     url.searchParams.delete('category');
     url.searchParams.delete('vendor');
     url.searchParams.delete('low_stock');
     window.location.href = url.toString();
+}
+
+// Search functionality for main inventory
+function filterItems() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const tableRows = document.querySelectorAll('tbody tr');
+    let visibleCount = 0;
+    
+    tableRows.forEach(row => {
+        const itemName = row.cells[0].textContent.toLowerCase(); // First cell contains item name
+        const shouldShow = itemName.includes(searchTerm);
+        
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update the table info if search is active
+    updateSearchResults(visibleCount, searchTerm);
+}
+
+function updateSearchResults(count, searchTerm) {
+    // Find or create search results display
+    let resultsDiv = document.getElementById('searchResults');
+    if (!resultsDiv) {
+        resultsDiv = document.createElement('div');
+        resultsDiv.id = 'searchResults';
+        resultsDiv.className = 'text-muted mb-2';
+        
+        // Insert before the table
+        const tableWrapper = document.querySelector('.table-responsive');
+        if (tableWrapper) {
+            tableWrapper.parentElement.insertBefore(resultsDiv, tableWrapper);
+        }
+    }
+    
+    if (searchTerm && searchTerm.trim() !== '') {
+        resultsDiv.innerHTML = `<small><i class="fas fa-search me-1"></i>Showing ${count} items matching "${searchTerm}"<br>Mostrando ${count} artículos que coinciden con "${searchTerm}"</small>`;
+        resultsDiv.style.display = 'block';
+    } else {
+        resultsDiv.style.display = 'none';
+    }
 }
 
 // Category management functions
