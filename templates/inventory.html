@@ -503,8 +503,11 @@ function showDeleteCategoryModal() {
     const categorySelect = document.querySelector('select[onchange*="category"]');
     const selectedCategory = categorySelect.value;
     
-    if (!selectedCategory) {
-        alert('Please select a category to delete.\nPor favor selecciona una categoría para eliminar.');
+    console.log('Selected category for deletion:', selectedCategory); // Debug log
+    console.log('All options in select:', Array.from(categorySelect.options).map(opt => `"${opt.value}": "${opt.text}"`)); // Debug log
+    
+    if (!selectedCategory || selectedCategory === '') {
+        alert('Please select a specific category to delete (not "All Categories").\nPor favor selecciona una categoría específica para eliminar (no "Todas las Categorías").');
         return;
     }
     
@@ -514,6 +517,8 @@ function showDeleteCategoryModal() {
 }
 
 function deleteCategory(categoryName) {
+    console.log('Deleting category:', categoryName); // Debug log
+    
     fetch(`/delete_category`, {
         method: 'POST',
         headers: {
