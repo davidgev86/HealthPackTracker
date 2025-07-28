@@ -517,9 +517,9 @@ function deleteCategory(categoryName) {
     fetch(`/delete_category`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
         },
-        body: `category_name=${encodeURIComponent(categoryName)}`
+        body: JSON.stringify({category_name: categoryName})
     })
     .then(response => {
         console.log('Delete response status:', response.status, 'URL:', response.url);
@@ -567,9 +567,9 @@ function addCategory() {
     fetch('/add_category', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
         },
-        body: `category_name=${encodeURIComponent(categoryName)}`
+        body: JSON.stringify({category_name: categoryName})
     })
     .then(response => {
         if (!response.ok) {
