@@ -83,19 +83,31 @@
                 <label class="form-label">Category<br>
                     <small class="text-muted">Categoría</small>
                 </label>
-                <select class="form-select" onchange="applyFilter('category', this.value)">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                    <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
-                        {{ category }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="input-group">
+                    <select class="form-select" onchange="applyFilter('category', this.value)">
+                        <option value="">All Categories / Todas las Categorías</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if user.has_permission('edit') %}
+                    <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category / Agregar Categoría">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="showDeleteCategoryModal()" title="Delete Category / Eliminar Categoría">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Vendor</label>
+                <label class="form-label">Vendor<br>
+                    <small class="text-muted">Proveedor</small>
+                </label>
                 <select class="form-select" onchange="applyFilter('vendor', this.value)">
-                    <option value="">All Vendors</option>
+                    <option value="">All Vendors / Todos los Proveedores</option>
                     {% for vendor in vendors %}
                     <option value="{{ vendor.name }}" {% if current_vendor == vendor.name %}selected{% endif %}>
                         {{ vendor.name }}
@@ -104,28 +116,36 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Stock Status</label>
+                <label class="form-label">Stock Status<br>
+                    <small class="text-muted">Estado del Stock</small>
+                </label>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-warning {% if low_stock_filter %}active{% endif %}" 
                             onclick="toggleLowStockFilter()">
-                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock<br>
+                        <small>Poco Stock</small>
                     </button>
                     <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                        <i class="fas fa-times me-1"></i>Clear
+                        <i class="fas fa-times me-1"></i>Clear<br>
+                        <small>Limpiar</small>
                     </button>
                 </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Actions</label>
+                <label class="form-label">Actions<br>
+                    <small class="text-muted">Acciones</small>
+                </label>
                 <div class="d-flex gap-2">
                     <div class="dropdown">
                         <button class="btn btn-success dropdown-toggle" type="button" 
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-file-pdf me-1"></i>Generate PDF
+                            <i class="fas fa-file-pdf me-1"></i>Generate PDF<br>
+                            <small>Generar PDF</small>
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('generate_shopping_list_pdf_route') }}">
-                                <i class="fas fa-shopping-cart me-2"></i>Shopping List</a></li>
+                                <i class="fas fa-shopping-cart me-2"></i>Shopping List<br>
+                                <small>Lista de Compras</small></a></li>
 
                         </ul>
                     </div>
@@ -376,5 +396,102 @@ function clearFilters() {
     url.searchParams.delete('low_stock');
     window.location.href = url.toString();
 }
+
+// Category management functions
+function showDeleteCategoryModal() {
+    const categorySelect = document.querySelector('select[onchange*="category"]');
+    const selectedCategory = categorySelect.value;
+    
+    if (!selectedCategory) {
+        alert('Please select a category to delete.\nPor favor selecciona una categoría para eliminar.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete the category "${selectedCategory}"?\n¿Estás seguro de que quieres eliminar la categoría "${selectedCategory}"?`)) {
+        deleteCategory(selectedCategory);
+    }
+}
+
+function deleteCategory(categoryName) {
+    fetch(`/delete_category`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `category_name=${encodeURIComponent(categoryName)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error deleting category: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error deleting category');
+        console.error('Error:', error);
+    });
+}
+
+function addCategory() {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    
+    if (!categoryName) {
+        alert('Please enter a category name.\nPor favor ingresa un nombre de categoría.');
+        return;
+    }
+    
+    fetch('/add_category', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `category_name=${encodeURIComponent(categoryName)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error adding category: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error adding category');
+        console.error('Error:', error);
+    });
+}
 </script>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">Add New Category<br>
+                    <small class="text-muted">Agregar Nueva Categoría</small>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="newCategoryName" class="form-label">Category Name<br>
+                        <small class="text-muted">Nombre de la Categoría</small>
+                    </label>
+                    <input type="text" class="form-control" id="newCategoryName" placeholder="Enter category name / Ingresa el nombre de la categoría">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel<br>
+                    <small>Cancelar</small>
+                </button>
+                <button type="button" class="btn btn-primary" onclick="addCategory()">Add Category<br>
+                    <small>Agregar Categoría</small>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
