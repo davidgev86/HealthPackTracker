@@ -1170,12 +1170,21 @@ def add_category_api():
 def delete_category_api():
     """Delete a category from inventory page"""
     try:
+        # Debug logging
+        print(f"Content-Type: {request.content_type}")
+        print(f"Raw data: {request.get_data()}")
+        
         # Handle both form data and JSON
-        if request.content_type == 'application/json':
+        category_name = ''
+        if request.content_type and 'application/json' in request.content_type:
             data = request.get_json()
+            print(f"JSON data: {data}")
             category_name = data.get('category_name', '').strip() if data else ''
         else:
+            print(f"Form data: {request.form}")
             category_name = request.form.get('category_name', '').strip()
+        
+        print(f"Extracted category_name: '{category_name}'")
         
         if not category_name:
             return jsonify({'success': False, 'message': 'Category name is required'})
