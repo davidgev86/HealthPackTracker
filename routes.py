@@ -1171,20 +1171,40 @@ def delete_category_api():
     """Delete a category from inventory page"""
     try:
         # Debug logging
-        print(f"Content-Type: {request.content_type}")
-        print(f"Raw data: {request.get_data()}")
+        app.logger.info(f"Delete category request - Content-Type: {request.content_type}")
+        app.logger.info(f"Delete category request - Raw data: {request.get_data()}")
         
-        # Handle both form data and JSON
+        # Handle both form data and JSON - try multiple approaches
         category_name = ''
-        if request.content_type and 'application/json' in request.content_type:
-            data = request.get_json()
-            print(f"JSON data: {data}")
-            category_name = data.get('category_name', '').strip() if data else ''
-        else:
-            print(f"Form data: {request.form}")
+        
+        # Try JSON first
+        try:
+            if request.content_type and 'application/json' in request.content_type:
+                data = request.get_json(force=True)  # Force JSON parsing
+                app.logger.info(f"JSON data: {data}")
+                if data and isinstance(data, dict):
+                    category_name = data.get('category_name', '').strip()
+        except Exception as e:
+            app.logger.error(f"JSON parsing error: {e}")
+        
+        # Fallback to form data
+        if not category_name:
+            app.logger.info(f"Form data: {dict(request.form)}")
             category_name = request.form.get('category_name', '').strip()
         
-        print(f"Extracted category_name: '{category_name}'")
+        # Fallback to raw data parsing
+        if not category_name:
+            try:
+                import json
+                raw_data = request.get_data(as_text=True)
+                app.logger.info(f"Raw text data: {raw_data}")
+                if raw_data:
+                    data = json.loads(raw_data)
+                    category_name = data.get('category_name', '').strip()
+            except Exception as e:
+                app.logger.error(f"Raw data parsing error: {e}")
+        
+        app.logger.info(f"Final extracted category_name: '{category_name}'")
         
         if not category_name:
             return jsonify({'success': False, 'message': 'Category name is required'})
