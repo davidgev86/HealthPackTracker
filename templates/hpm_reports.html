@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}HPM Weekly Reports - HPM Inventory Tracker{% endblock %}
+{% block title %}HPM Weekly Reports / Reportes Semanales HPM - HPM Inventory Tracker{% endblock %}
 
 {% block content %}
 <style>
@@ -118,13 +118,17 @@
 
 <div class="container mt-4">
     <div class="page-header">
-        <h2><i class="fas fa-chart-line me-2"></i>HPM Weekly Reports</h2>
+        <h2><i class="fas fa-chart-line me-2"></i>HPM Weekly Reports<br>
+            <small class="text-muted">Reportes Semanales HPM</small>
+        </h2>
         <div class="d-flex gap-2">
             <a href="{{ url_for('hpm_items') }}" class="btn btn-outline-primary">
-                <i class="fas fa-boxes me-2"></i>Back to HPM Items
+                <i class="fas fa-boxes me-2"></i>Back to HPM Items<br>
+                <small>Volver a Artículos HPM</small>
             </a>
             <a href="{{ url_for('weekly_waste_reports') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-chart-bar me-2"></i>General Reports
+                <i class="fas fa-chart-bar me-2"></i>General Reports<br>
+                <small>Reportes Generales</small>
             </a>
         </div>
     </div>

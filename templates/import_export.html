@@ -4,7 +4,9 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-file-import me-2"></i>Import/Export</h2>
+    <h2><i class="fas fa-file-import me-2"></i>Import/Export<br>
+        <small class="text-muted">Importar/Exportar</small>
+    </h2>
     <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left me-2"></i>Back to Inventory
     </a>
@@ -14,14 +16,18 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-file-import me-2"></i>Import Inventory</h4>
+                <h4><i class="fas fa-file-import me-2"></i>Import Inventory<br>
+                    <small class="text-muted">Importar Inventario</small>
+                </h4>
             </div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="import_file" class="form-label">Select CSV File</label>
+                        <label for="import_file" class="form-label">Select CSV File / Seleccionar Archivo CSV</label>
                         <input type="file" class="form-control" id="import_file" name="import_file" accept=".csv" required>
-                        <div class="form-text">Upload a CSV file with inventory data</div>
+                        <div class="form-text">Upload a CSV file with inventory data<br>
+                            <small>Subir un archivo CSV con datos de inventario</small>
+                        </div>
                     </div>
                     
                     <div class="alert alert-info">
@@ -40,7 +46,8 @@
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload me-2"></i>Import Data
+                        <i class="fas fa-upload me-2"></i>Import Data<br>
+                        <small>Importar Datos</small>
                     </button>
                 </form>
             </div>
@@ -50,7 +57,9 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-file-export me-2"></i>Export Inventory</h4>
+                <h4><i class="fas fa-file-export me-2"></i>Export Inventory<br>
+                    <small class="text-muted">Exportar Inventario</small>
+                </h4>
             </div>
             <div class="card-body">
                 <p>Download your current inventory data as a CSV file for backup or external use.</p>
@@ -66,7 +75,8 @@
                 </div>
                 
                 <a href="{{ url_for('export_csv') }}" class="btn btn-success">
-                    <i class="fas fa-download me-2"></i>Export to CSV
+                    <i class="fas fa-download me-2"></i>Export to CSV<br>
+                    <small>Exportar a CSV</small>
                 </a>
             </div>
         </div>

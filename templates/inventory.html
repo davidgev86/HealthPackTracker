@@ -80,7 +80,9 @@
     <div class="card-body">
         <div class="row">
             <div class="col-md-3">
-                <label class="form-label">Category</label>
+                <label class="form-label">Category<br>
+                    <small class="text-muted">Categoría</small>
+                </label>
                 <select class="form-select" onchange="applyFilter('category', this.value)">
                     <option value="">All Categories</option>
                     {% for category in categories %}
