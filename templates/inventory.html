@@ -3,6 +3,49 @@
 {% block title %}Inventory - HPM Inventory{% endblock %}
 
 {% block content %}
+<style>
+/* Ensure buttons have adequate space for bilingual text */
+.btn-bilingual {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+}
+
+.btn-bilingual small {
+    font-size: 0.75em;
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+/* Responsive adjustments for filter section */
+@media (max-width: 992px) {
+    .filter-section .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .filter-section .col-lg-3 {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .btn-bilingual {
+        min-height: 50px;
+        font-size: 0.875rem;
+    }
+    
+    .btn-bilingual small {
+        font-size: 0.7em;
+    }
+}
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-boxes me-2"></i>Inventory Management<br>
         <small class="text-muted">Gestión de Inventario</small>
@@ -77,9 +120,9 @@
             <small class="text-muted">Filtros y Acciones</small>
         </h5>
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
+    <div class="card-body filter-section">
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label">Category<br>
                     <small class="text-muted">Categoría</small>
                 </label>
@@ -93,16 +136,16 @@
                         {% endfor %}
                     </select>
                     {% if user.has_permission('edit') %}
-                    <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category / Agregar Categoría">
+                    <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category / Agregar Categoría" style="min-width: 35px;">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="showDeleteCategoryModal()" title="Delete Category / Eliminar Categoría">
+                    <button class="btn btn-outline-danger btn-sm" onclick="showDeleteCategoryModal()" title="Delete Category / Eliminar Categoría" style="min-width: 35px;">
                         <i class="fas fa-trash"></i>
                     </button>
                     {% endif %}
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label">Vendor<br>
                     <small class="text-muted">Proveedor</small>
                 </label>
@@ -115,31 +158,31 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label">Stock Status<br>
                     <small class="text-muted">Estado del Stock</small>
                 </label>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-warning {% if low_stock_filter %}active{% endif %}" 
-                            onclick="toggleLowStockFilter()">
-                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock<br>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline-warning btn-sm btn-bilingual {% if low_stock_filter %}active{% endif %}" 
+                            onclick="toggleLowStockFilter()" style="min-width: 110px;">
+                        <span><i class="fas fa-exclamation-triangle me-1"></i>Low Stock</span>
                         <small>Poco Stock</small>
                     </button>
-                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                        <i class="fas fa-times me-1"></i>Clear<br>
+                    <button class="btn btn-outline-secondary btn-sm btn-bilingual" onclick="clearFilters()" style="min-width: 90px;">
+                        <span><i class="fas fa-times me-1"></i>Clear</span>
                         <small>Limpiar</small>
                     </button>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label">Actions<br>
                     <small class="text-muted">Acciones</small>
                 </label>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 flex-wrap">
                     <div class="dropdown">
-                        <button class="btn btn-success dropdown-toggle" type="button" 
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-file-pdf me-1"></i>Generate PDF<br>
+                        <button class="btn btn-success dropdown-toggle btn-sm btn-bilingual" type="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 140px;">
+                            <span><i class="fas fa-file-pdf me-1"></i>Generate PDF</span>
                             <small>Generar PDF</small>
                         </button>
                         <ul class="dropdown-menu">
