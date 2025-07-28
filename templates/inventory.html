@@ -519,13 +519,14 @@ function showDeleteCategoryModal() {
 function deleteCategory(categoryName) {
     console.log('Deleting category:', categoryName); // Debug log
     
+    // Use a simple form-based approach that's more reliable
+    const formData = new FormData();
+    formData.append('category_name', categoryName);
+    
     fetch(`/delete_category`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         credentials: 'same-origin', // Include cookies/session
-        body: JSON.stringify({category_name: categoryName})
+        body: formData
     })
     .then(response => {
         console.log('Delete response status:', response.status, 'URL:', response.url);
@@ -570,13 +571,13 @@ function addCategory() {
         return;
     }
     
+    const formData = new FormData();
+    formData.append('category_name', categoryName);
+    
     fetch('/add_category', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         credentials: 'same-origin', // Include cookies/session
-        body: JSON.stringify({category_name: categoryName})
+        body: formData
     })
     .then(response => {
         if (!response.ok) {

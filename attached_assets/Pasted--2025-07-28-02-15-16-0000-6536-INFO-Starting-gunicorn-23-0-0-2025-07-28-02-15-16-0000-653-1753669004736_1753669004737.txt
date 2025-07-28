@@ -1,0 +1,36 @@
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Starting gunicorn 23.0.0
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Listening at: http://0.0.0.0:5000 (6536)
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Using worker: sync
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winchd: 6547
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:16 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:17 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:18 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:18 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:18 +0000] [6536] [INFO] Handling signal: winch
+[2025-07-28 02:15:18 +0000] [6536] [INFO] Handling signal: winch
+^C[2025-07-28 02:16:23 +0000] [6536] [INFO] Handling signal: int
+[2025-07-28 02:16:23 +0000] [6547] [INFO] Worker exiting (pid: 6547)
+[2025-07-28 02:16:23 +0000] [6536] [INFO] Shutting down: Master
