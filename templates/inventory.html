@@ -521,17 +521,24 @@ function deleteCategory(categoryName) {
         },
         body: `category_name=${encodeURIComponent(categoryName)}`
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Delete response:', data); // Debug log
         if (data.success) {
+            alert('Category deleted successfully!\nCategoría eliminada exitosamente!');
             location.reload();
         } else {
-            alert('Error deleting category: ' + data.message);
+            alert('Error deleting category: ' + (data.message || 'Unknown error') + '\nError al eliminar categoría: ' + (data.message || 'Error desconocido'));
         }
     })
     .catch(error => {
-        alert('Error deleting category');
-        console.error('Error:', error);
+        console.error('Delete category error:', error);
+        alert('Error deleting category: ' + error.message + '\nError al eliminar categoría: ' + error.message);
     });
 }
 
@@ -550,17 +557,24 @@ function addCategory() {
         },
         body: `category_name=${encodeURIComponent(categoryName)}`
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Add response:', data); // Debug log
         if (data.success) {
+            alert('Category added successfully!\nCategoría agregada exitosamente!');
             location.reload();
         } else {
-            alert('Error adding category: ' + data.message);
+            alert('Error adding category: ' + (data.message || 'Unknown error') + '\nError al agregar categoría: ' + (data.message || 'Error desconocido'));
         }
     })
     .catch(error => {
-        alert('Error adding category');
-        console.error('Error:', error);
+        console.error('Add category error:', error);
+        alert('Error adding category: ' + error.message + '\nError al agregar categoría: ' + error.message);
     });
 }
 </script>
