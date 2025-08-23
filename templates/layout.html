@@ -156,8 +156,15 @@
                     // Preserve HTML structure while updating text content
                     const innerHTML = element.innerHTML;
                     const iconMatch = innerHTML.match(/<i[^>]*>.*?<\/i>/);
+                    const spanMatch = innerHTML.match(/<span[^>]*>.*?<\/span>/);
                     const icon = iconMatch ? iconMatch[0] + ' ' : '';
-                    element.innerHTML = icon + text;
+                    
+                    // Handle elements with spans for translation
+                    if (spanMatch) {
+                        element.innerHTML = innerHTML.replace(spanMatch[0], text);
+                    } else {
+                        element.innerHTML = icon + text;
+                    }
                 }
             });
             
@@ -166,6 +173,33 @@
                 const placeholder = element.getAttribute('data-placeholder-' + currentLanguage);
                 if (placeholder) {
                     element.placeholder = placeholder;
+                }
+            });
+            
+            // Update select option texts
+            document.querySelectorAll('option[data-en][data-es]').forEach(option => {
+                const text = option.getAttribute('data-' + currentLanguage);
+                if (text) {
+                    option.textContent = text;
+                }
+            });
+            
+            // Update modal titles
+            document.querySelectorAll('.modal-title[data-en][data-es]').forEach(title => {
+                const text = title.getAttribute('data-' + currentLanguage);
+                if (text) {
+                    const innerHTML = title.innerHTML;
+                    const iconMatch = innerHTML.match(/<i[^>]*>.*?<\/i>/);
+                    const icon = iconMatch ? iconMatch[0] + ' ' : '';
+                    title.innerHTML = icon + text;
+                }
+            });
+            
+            // Update table headers
+            document.querySelectorAll('th[data-en][data-es]').forEach(th => {
+                const text = th.getAttribute('data-' + currentLanguage);
+                if (text) {
+                    th.textContent = text;
                 }
             });
             

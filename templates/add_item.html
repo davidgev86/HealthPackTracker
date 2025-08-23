@@ -68,22 +68,16 @@
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="par_level" class="form-label">Par Level <span class="text-danger">*</span><br>
-                                    <small class="text-muted">Nivel Mínimo</small>
-                                </label>
+                                <label for="par_level" class="form-label" data-en="Par Level" data-es="Nivel Mínimo">Par Level <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="par_level" name="par_level" min="0" required>
-                                <div class="form-text">Minimum stock level before reordering<br>
-                                    <small>Nivel mínimo de stock antes de reordenar</small>
-                                </div>
+                                <div class="form-text" data-en="Minimum stock level before reordering" data-es="Nivel mínimo de stock antes de reordenar">Minimum stock level before reordering</div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="unit_cost" class="form-label">Unit Cost ($)<br>
-                                    <small class="text-muted">Costo por Unidad ($)</small>
-                                </label>
-                                <input type="number" class="form-control" id="unit_cost" name="unit_cost" min="0" step="0.01" placeholder="0.00">
-                                <div class="form-text">Cost per unit (for value calculations)</div>
+                                <label for="unit_cost" class="form-label" data-en="Unit Cost ($)" data-es="Costo por Unidad ($)">Unit Cost ($)</label>
+                                <input type="number" class="form-control" id="unit_cost" name="unit_cost" min="0" step="0.01" placeholder="0.00" data-placeholder-en="0.00" data-placeholder-es="0.00">
+                                <div class="form-text" data-en="Cost per unit (for value calculations)" data-es="Costo por unidad (para cálculos de valor)">Cost per unit (for value calculations)</div>
                             </div>
                         </div>
                     </div>
@@ -91,29 +85,28 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="vendors" class="form-label">Vendors</label>
+                                <label for="vendors" class="form-label" data-en="Vendors" data-es="Proveedores">Vendors</label>
                                 <select class="form-select" id="vendors" name="vendors" multiple>
                                     {% for vendor in vendors %}
                                     <option value="{{ vendor.name }}">{{ vendor.name }}</option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-text">Hold Ctrl/Cmd to select multiple vendors</div>
+                                <div class="form-text" data-en="Hold Ctrl/Cmd to select multiple vendors" data-es="Mantén presionado Ctrl/Cmd para seleccionar múltiples proveedores">Hold Ctrl/Cmd to select multiple vendors</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Par Level:</strong> Set this to the minimum quantity you want to maintain in stock. 
-                                When the current quantity falls below this level, the item will be highlighted as low stock.
+                                <strong data-en="Par Level:" data-es="Nivel Mínimo:">Par Level:</strong> <span data-en="Set this to the minimum quantity you want to maintain in stock. When the current quantity falls below this level, the item will be highlighted as low stock." data-es="Establece la cantidad mínima que deseas mantener en stock. Cuando la cantidad actual caiga por debajo de este nivel, el artículo se destacará como poco stock.">Set this to the minimum quantity you want to maintain in stock. When the current quantity falls below this level, the item will be highlighted as low stock.</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('inventory') }}" class="btn btn-secondary">
+                        <a href="{{ url_for('inventory') }}" class="btn btn-secondary" data-en="Back to Inventory" data-es="Volver al Inventario">
                             <i class="fas fa-arrow-left me-2"></i>Back to Inventory
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" data-en="Add Item" data-es="Agregar Artículo">
                             <i class="fas fa-save me-2"></i>Add Item
                         </button>
                     </div>
