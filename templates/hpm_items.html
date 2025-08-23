@@ -104,19 +104,17 @@
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-boxes me-2"></i>HPM Items Management<br>
-        <small class="text-muted">Gestión de Artículos HPM</small>
+    <h2 data-en="HPM Items Management" data-es="Gestión de Artículos HPM">
+        <i class="fas fa-boxes me-2"></i>HPM Items Management
     </h2>
     <div class="d-flex gap-2">
         {% if user.role in ['admin', 'manager'] %}
-        <button class="btn btn-success" onclick="showAddItem()">
-            <i class="fas fa-plus me-2"></i>Add HPM Item<br>
-            <small>Agregar Artículo HPM</small>
+        <button class="btn btn-success" onclick="showAddItem()" data-en="Add HPM Item" data-es="Agregar Artículo HPM">
+            <i class="fas fa-plus me-2"></i>Add HPM Item
         </button>
         {% endif %}
-        <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
-            <i class="fas fa-warehouse me-2"></i>Main Inventory<br>
-            <small>Inventario Principal</small>
+        <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary" data-en="Main Inventory" data-es="Inventario Principal">
+            <i class="fas fa-warehouse me-2"></i>Main Inventory
         </a>
     </div>
 </div>
@@ -137,46 +135,34 @@
 <div class="hpm-stats">
     <div class="stat-card">
         <div class="stat-value">{{ total_items }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Items{% else %}Total HPM Items{% endif %}<br>
-            <small class="text-muted">{% if current_category %}Artículos {{ current_category }}{% else %}Total Artículos HPM{% endif %}</small>
-        </div>
+        <div class="stat-label" data-en="{% if current_category %}{{ current_category }} Items{% else %}Total HPM Items{% endif %}" data-es="{% if current_category %}Artículos {{ current_category }}{% else %}Total Artículos HPM{% endif %}">{% if current_category %}{{ current_category }} Items{% else %}Total HPM Items{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">${{ "%.2f"|format(total_value) }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Value{% else %}Total Inventory Value{% endif %}<br>
-            <small class="text-muted">{% if current_category %}Valor {{ current_category }}{% else %}Valor Total Inventario{% endif %}</small>
-        </div>
+        <div class="stat-label" data-en="{% if current_category %}{{ current_category }} Value{% else %}Total Inventory Value{% endif %}" data-es="{% if current_category %}Valor {{ current_category }}{% else %}Valor Total Inventario{% endif %}">{% if current_category %}{{ current_category }} Value{% else %}Total Inventory Value{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">{{ low_stock_count }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Low Stock{% else %}Low Stock Items{% endif %}<br>
-            <small class="text-muted">{% if current_category %}{{ current_category }} Poco Stock{% else %}Artículos Poco Stock{% endif %}</small>
-        </div>
+        <div class="stat-label" data-en="{% if current_category %}{{ current_category }} Low Stock{% else %}Low Stock Items{% endif %}" data-es="{% if current_category %}{{ current_category }} Poco Stock{% else %}Artículos Poco Stock{% endif %}">{% if current_category %}{{ current_category }} Low Stock{% else %}Low Stock Items{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">${{ "%.2f"|format(total_waste_value) }}</div>
-        <div class="stat-label">{% if current_category %}{{ current_category }} Waste Value{% else %}Total Waste Value{% endif %}<br>
-            <small class="text-muted">{% if current_category %}Valor Desperdicio {{ current_category }}{% else %}Valor Total Desperdicios{% endif %}</small>
-        </div>
+        <div class="stat-label" data-en="{% if current_category %}{{ current_category }} Waste Value{% else %}Total Waste Value{% endif %}" data-es="{% if current_category %}Valor Desperdicio {{ current_category }}{% else %}Valor Total Desperdicios{% endif %}">{% if current_category %}{{ current_category }} Waste Value{% else %}Total Waste Value{% endif %}</div>
     </div>
 </div>
 
 <!-- Filter Controls -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">Filter & Actions<br>
-            <small class="text-muted">Filtros y Acciones</small>
-        </h5>
+        <h5 class="mb-0" data-en="Filter & Actions" data-es="Filtros y Acciones">Filter & Actions</h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-3">
-                <label class="form-label">Category<br>
-                    <small class="text-muted">Categoría</small>
-                </label>
+                <label class="form-label" data-en="Category" data-es="Categoría">Category</label>
                 <div class="d-flex gap-2">
                     <select class="form-select" onchange="applyFilter('category', this.value)">
-                        <option value="">All Categories / Todas las Categorías</option>
+                        <option value="" data-en="All Categories" data-es="Todas las Categorías">All Categories</option>
                         {% for category in categories %}
                         <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
                             {{ category }}
@@ -194,38 +180,29 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Stock Status<br>
-                    <small class="text-muted">Estado de Stock</small>
-                </label>
+                <label class="form-label" data-en="Stock Status" data-es="Estado de Stock">Stock Status</label>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-warning {% if low_stock_filter %}active{% endif %}" 
                             onclick="toggleLowStockFilter()">
-                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock<br>
-                        <small>Poco Stock</small>
+                        <i class="fas fa-exclamation-triangle me-1"></i><span data-en="Low Stock" data-es="Poco Stock">Low Stock</span>
                     </button>
                     <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                        <i class="fas fa-times me-1"></i>Clear<br>
-                        <small>Limpiar</small>
+                        <i class="fas fa-times me-1"></i><span data-en="Clear" data-es="Limpiar">Clear</span>
                     </button>
                 </div>
             </div>
             {% if user.role in ['admin', 'manager'] %}
             <div class="col-md-6">
-                <label class="form-label">HPM Reporting & Archive<br>
-                    <small class="text-muted">Reportes y Archivo HPM</small>
-                </label>
+                <label class="form-label" data-en="HPM Reporting & Archive" data-es="Reportes y Archivo HPM">HPM Reporting & Archive</label>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success" onclick="generateHPMReport()">
-                        <i class="fas fa-chart-bar me-1"></i>Generate Weekly Report<br>
-                        <small>Generar Reporte Semanal</small>
+                        <i class="fas fa-chart-bar me-1"></i><span data-en="Generate Weekly Report" data-es="Generar Reporte Semanal">Generate Weekly Report</span>
                     </button>
                     <button class="btn btn-warning" onclick="confirmArchiveHPMWaste()">
-                        <i class="fas fa-archive me-1"></i>Archive Waste Log<br>
-                        <small>Archivar Registro Desperdicios</small>
+                        <i class="fas fa-archive me-1"></i><span data-en="Archive Waste Log" data-es="Archivar Registro Desperdicios">Archive Waste Log</span>
                     </button>
                     <a href="{{ url_for('hpm_reports') }}" class="btn btn-info">
-                        <i class="fas fa-history me-1"></i>View Reports<br>
-                        <small>Ver Reportes</small>
+                        <i class="fas fa-history me-1"></i><span data-en="View Reports" data-es="Ver Reportes">View Reports</span>
                     </a>
                 </div>
             </div>
@@ -244,13 +221,14 @@
                         <i class="fas fa-search"></i>
                     </span>
                     <input type="text" class="form-control" id="searchInput" 
-                           placeholder="Search HPM items by name... / Buscar artículos HPM por nombre..." 
+                           placeholder="Search HPM items by name..." 
+                           data-placeholder-en="Search HPM items by name..." 
+                           data-placeholder-es="Buscar artículos HPM por nombre..." 
                            onkeyup="searchItems()">
                 </div>
             </div>
             <div class="col-md-4 text-end">
-                <small class="text-muted" id="searchResults">Showing {{ hpm_items|length }} items<br>
-                    Mostrando {{ hpm_items|length }} artículos</small>
+                <small class="text-muted" id="searchResults" data-en="Showing {{ hpm_items|length }} items" data-es="Mostrando {{ hpm_items|length }} artículos">Showing {{ hpm_items|length }} items</small>
             </div>
         </div>
     </div>
@@ -260,8 +238,7 @@
 <div class="hpm-card">
     <h3>
         <i class="fas fa-boxes"></i>
-        HPM Inventory Items (<span id="visibleItemCount">{{ hpm_items|length }}</span>)<br>
-        <small class="text-muted">Artículos de Inventario HPM (<span id="visibleItemCount">{{ hpm_items|length }}</span>)</small>
+        <span data-en="HPM Inventory Items" data-es="Artículos de Inventario HPM">HPM Inventory Items</span> (<span id="visibleItemCount">{{ hpm_items|length }}</span>)
     </h3>
     
     {% if hpm_items %}
@@ -271,25 +248,22 @@
                     <div>
                         <span class="item-name">{{ item.name }}</span>
                         <span class="badge {{ 'low-stock' if item.is_low_stock() else 'in-stock' }}">
-                            {{ 'Low Stock / Poco Stock' if item.is_low_stock() else 'In Stock / En Stock' }}
+                            <span data-en="{{ 'Low Stock' if item.is_low_stock() else 'In Stock' }}" data-es="{{ 'Poco Stock' if item.is_low_stock() else 'En Stock' }}">{{ 'Low Stock' if item.is_low_stock() else 'In Stock' }}</span>
                         </span>
                     </div>
                     <div class="quick-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="showUpdateCount('{{ item.name }}', {{ item.quantity }}, '{{ item.unit }}')">
                             <i class="fas fa-edit"></i>
-                            Update Count<br>
-                            <small>Actualizar Cantidad</small>
+                            <span data-en="Update Count" data-es="Actualizar Cantidad">Update Count</span>
                         </button>
                         <button class="btn btn-sm btn-outline-warning" onclick="showLogWaste('{{ item.name }}', '{{ item.unit }}')">
                             <i class="fas fa-trash"></i>
-                            Log Waste<br>
-                            <small>Registrar Desperdicio</small>
+                            <span data-en="Log Waste" data-es="Registrar Desperdicio">Log Waste</span>
                         </button>
                         {% if user.role in ['admin', 'manager'] %}
                         <button class="btn btn-sm btn-outline-danger" onclick="showDeleteItem('{{ item.name }}')">
                             <i class="fas fa-times"></i>
-                            Delete Item<br>
-                            <small>Eliminar Artículo</small>
+                            <span data-en="Delete Item" data-es="Eliminar Artículo">Delete Item</span>
                         </button>
                         {% endif %}
                     </div>
@@ -297,31 +271,25 @@
                 
                 <div class="row">
                     <div class="col-md-3">
-                        <strong>Current Stock:</strong> {{ item.quantity }} {{ item.unit }}<br>
-                        <small class="text-muted">Stock Actual:</small>
+                        <strong data-en="Current Stock:" data-es="Stock Actual:">Current Stock:</strong> {{ item.quantity }} {{ item.unit }}
                     </div>
                     <div class="col-md-3">
-                        <strong>Par Level:</strong> {{ item.par_level }} {{ item.unit }}<br>
-                        <small class="text-muted">Nivel Mínimo:</small>
+                        <strong data-en="Par Level:" data-es="Nivel Mínimo:">Par Level:</strong> {{ item.par_level }} {{ item.unit }}
                     </div>
                     <div class="col-md-3">
-                        <strong>Unit Cost:</strong> ${{ "%.2f"|format(item.unit_cost) }}<br>
-                        <small class="text-muted">Costo por Unidad:</small>
+                        <strong data-en="Unit Cost:" data-es="Costo por Unidad:">Unit Cost:</strong> ${{ "%.2f"|format(item.unit_cost) }}
                     </div>
                     <div class="col-md-3">
-                        <strong>Total Value:</strong> ${{ "%.2f"|format(item.total_value()) }}<br>
-                        <small class="text-muted">Valor Total:</small>
+                        <strong data-en="Total Value:" data-es="Valor Total:">Total Value:</strong> ${{ "%.2f"|format(item.total_value()) }}
                     </div>
                 </div>
                 
                 <div class="row mt-2">
                     <div class="col-md-6">
-                        <strong>Category:</strong> {{ item.category }}<br>
-                        <small class="text-muted">Categoría:</small>
+                        <strong data-en="Category:" data-es="Categoría:">Category:</strong> {{ item.category }}
                     </div>
                     <div class="col-md-6">
-                        <strong>Last Updated:</strong> {{ item.last_updated or 'Never' }}<br>
-                        <small class="text-muted">Última Actualización:</small>
+                        <strong data-en="Last Updated:" data-es="Última Actualización:">Last Updated:</strong> {{ item.last_updated or 'Never' }}
                     </div>
                 </div>
             </div>
@@ -329,8 +297,7 @@
     {% else %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i>
-            No HPM items found. Items must have "HPM" as a vendor to appear here.<br>
-            <small class="text-muted">No se encontraron artículos HPM. Los artículos deben tener "HPM" como proveedor para aparecer aquí.</small>
+            <span data-en="No HPM items found. Items must have 'HPM' as a vendor to appear here." data-es="No se encontraron artículos HPM. Los artículos deben tener 'HPM' como proveedor para aparecer aquí.">No HPM items found. Items must have "HPM" as a vendor to appear here.</span>
         </div>
     {% endif %}
 </div>

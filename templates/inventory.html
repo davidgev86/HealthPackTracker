@@ -4,25 +4,6 @@
 
 {% block content %}
 <style>
-/* Ensure buttons have adequate space for bilingual text */
-.btn-bilingual {
-    white-space: nowrap;
-    overflow: visible;
-    text-overflow: clip;
-    min-height: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.2;
-}
-
-.btn-bilingual small {
-    font-size: 0.75em;
-    opacity: 0.8;
-    margin-top: 2px;
-}
-
 /* Responsive adjustments for filter section */
 @media (max-width: 992px) {
     .filter-section .btn {
@@ -33,37 +14,23 @@
         margin-bottom: 1rem;
     }
 }
-
-@media (max-width: 768px) {
-    .btn-bilingual {
-        min-height: 50px;
-        font-size: 0.875rem;
-    }
-    
-    .btn-bilingual small {
-        font-size: 0.7em;
-    }
-}
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-boxes me-2"></i>Inventory Management<br>
-        <small class="text-muted">Gestión de Inventario</small>
+    <h2 data-en="Inventory Management" data-es="Gestión de Inventario">
+        <i class="fas fa-boxes me-2"></i>Inventory Management
     </h2>
     <div class="btn-group">
         {% if user.has_permission('edit') %}
-        <a href="{{ url_for('add_item') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add Item<br>
-            <small>Agregar Artículo</small>
+        <a href="{{ url_for('add_item') }}" class="btn btn-primary" data-en="Add Item" data-es="Agregar Artículo">
+            <i class="fas fa-plus me-2"></i>Add Item
         </a>
-        <a href="{{ url_for('vendors') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-truck me-2"></i>Vendors<br>
-            <small>Proveedores</small>
+        <a href="{{ url_for('vendors') }}" class="btn btn-outline-secondary" data-en="Vendors" data-es="Proveedores">
+            <i class="fas fa-truck me-2"></i>Vendors
         </a>
 
-        <a href="{{ url_for('categories') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-tags me-2"></i>Categories<br>
-            <small>Categorías</small>
+        <a href="{{ url_for('categories') }}" class="btn btn-outline-secondary" data-en="Categories" data-es="Categorías">
+            <i class="fas fa-tags me-2"></i>Categories
         </a>
         {% endif %}
     </div>
@@ -74,9 +41,7 @@
     <div class="col-md-3">
         <div class="card bg-primary text-white">
             <div class="card-body">
-                <h5 class="card-title">Total Items<br>
-                    <small>Total Artículos</small>
-                </h5>
+                <h5 class="card-title" data-en="Total Items" data-es="Total Artículos">Total Items</h5>
                 <h3>{{ all_items|length if all_items else items|length }}</h3>
             </div>
         </div>
@@ -84,9 +49,7 @@
     <div class="col-md-3">
         <div class="card bg-warning text-dark">
             <div class="card-body">
-                <h5 class="card-title">Low Stock<br>
-                    <small>Poco Stock</small>
-                </h5>
+                <h5 class="card-title" data-en="Low Stock" data-es="Poco Stock">Low Stock</h5>
                 <h3>{{ low_stock_count }}</h3>
             </div>
         </div>
@@ -94,9 +57,7 @@
     <div class="col-md-3">
         <div class="card bg-info text-white">
             <div class="card-body">
-                <h5 class="card-title">Categories<br>
-                    <small>Categorías</small>
-                </h5>
+                <h5 class="card-title" data-en="Categories" data-es="Categorías">Categories</h5>
                 <h3>{{ (all_items|map(attribute='category')|unique|list|length) if all_items else (items|map(attribute='category')|unique|list|length) }}</h3>
             </div>
         </div>
@@ -104,9 +65,7 @@
     <div class="col-md-3">
         <div class="card bg-success text-white">
             <div class="card-body">
-                <h5 class="card-title">Total Value<br>
-                    <small>Valor Total</small>
-                </h5>
+                <h5 class="card-title" data-en="Total Value" data-es="Valor Total">Total Value</h5>
                 <h3>${{ "%.2f"|format(total_value) }}</h3>
             </div>
         </div>
@@ -116,25 +75,23 @@
 <!-- Filter Controls -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">Filter & Actions<br>
-            <small class="text-muted">Filtros y Acciones</small>
-        </h5>
+        <h5 class="mb-0" data-en="Filter & Actions" data-es="Filtros y Acciones">Filter & Actions</h5>
     </div>
     <div class="card-body filter-section">
         <div class="row g-3">
             <div class="col-lg-3 col-md-6">
-                <label class="form-label">Search Items<br>
-                    <small class="text-muted">Buscar Artículos</small>
-                </label>
-                <input type="text" class="form-control" id="searchInput" placeholder="Search by item name... / Buscar por nombre..." onkeyup="filterItems()">
+                <label class="form-label" data-en="Search Items" data-es="Buscar Artículos">Search Items</label>
+                <input type="text" class="form-control" id="searchInput" 
+                       placeholder="Search by item name..." 
+                       data-placeholder-en="Search by item name..." 
+                       data-placeholder-es="Buscar por nombre..." 
+                       onkeyup="filterItems()">
             </div>
             <div class="col-lg-3 col-md-6">
-                <label class="form-label">Category<br>
-                    <small class="text-muted">Categoría</small>
-                </label>
+                <label class="form-label" data-en="Category" data-es="Categoría">Category</label>
                 <div class="input-group">
                     <select class="form-select" onchange="applyFilter('category', this.value)">
-                        <option value="">All Categories / Todas las Categorías</option>
+                        <option value="" data-en="All Categories" data-es="Todas las Categorías">All Categories</option>
                         {% for category in categories %}
                         <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
                             {{ category }}
@@ -144,11 +101,9 @@
                 </div>
             </div>
             <div class="col-lg-2 col-md-6">
-                <label class="form-label">Vendor<br>
-                    <small class="text-muted">Proveedor</small>
-                </label>
+                <label class="form-label" data-en="Vendor" data-es="Proveedor">Vendor</label>
                 <select class="form-select" onchange="applyFilter('vendor', this.value)">
-                    <option value="">All Vendors / Todos los Proveedores</option>
+                    <option value="" data-en="All Vendors" data-es="Todos los Proveedores">All Vendors</option>
                     {% for vendor in vendors %}
                     <option value="{{ vendor.name }}" {% if current_vendor == vendor.name %}selected{% endif %}>
                         {{ vendor.name }}
@@ -157,36 +112,32 @@
                 </select>
             </div>
             <div class="col-lg-2 col-md-6">
-                <label class="form-label">Stock Status<br>
-                    <small class="text-muted">Estado del Stock</small>
-                </label>
+                <label class="form-label" data-en="Stock Status" data-es="Estado del Stock">Stock Status</label>
                 <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-warning btn-sm btn-bilingual {% if low_stock_filter %}active{% endif %}" 
-                            onclick="toggleLowStockFilter()" style="min-width: 110px;">
-                        <span><i class="fas fa-exclamation-triangle me-1"></i>Low Stock</span>
-                        <small>Poco Stock</small>
+                    <button class="btn btn-outline-warning btn-sm {% if low_stock_filter %}active{% endif %}" 
+                            onclick="toggleLowStockFilter()" 
+                            data-en="Low Stock" data-es="Poco Stock">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm btn-bilingual" onclick="clearFilters()" style="min-width: 90px;">
-                        <span><i class="fas fa-times me-1"></i>Clear</span>
-                        <small>Limpiar</small>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()" 
+                            data-en="Clear" data-es="Limpiar">
+                        <i class="fas fa-times me-1"></i>Clear
                     </button>
                 </div>
             </div>
             <div class="col-lg-2 col-md-6">
-                <label class="form-label">Actions<br>
-                    <small class="text-muted">Acciones</small>
-                </label>
+                <label class="form-label" data-en="Actions" data-es="Acciones">Actions</label>
                 <div class="d-flex gap-2 flex-wrap">
                     <div class="dropdown">
-                        <button class="btn btn-success dropdown-toggle btn-sm btn-bilingual" type="button" 
-                                data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 140px;">
-                            <span><i class="fas fa-file-pdf me-1"></i>Generate PDF</span>
-                            <small>Generar PDF</small>
+                        <button class="btn btn-success dropdown-toggle btn-sm" type="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false" 
+                                data-en="Generate PDF" data-es="Generar PDF">
+                            <i class="fas fa-file-pdf me-1"></i>Generate PDF
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('generate_shopping_list_pdf_route') }}">
-                                <i class="fas fa-shopping-cart me-2"></i>Shopping List<br>
-                                <small>Lista de Compras</small></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('generate_shopping_list_pdf_route') }}" 
+                                   data-en="Shopping List" data-es="Lista de Compras">
+                                <i class="fas fa-shopping-cart me-2"></i>Shopping List</a></li>
 
                         </ul>
                     </div>
@@ -200,13 +151,15 @@
 <!-- Inventory Table -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Current Inventory</h5>
+        <h5 class="mb-0" data-en="Current Inventory" data-es="Inventario Actual">Current Inventory</h5>
         {% if user.has_permission('edit') %}
         <div class="btn-group">
-            <button class="btn btn-sm btn-outline-primary" onclick="toggleBulkEdit()">
+            <button class="btn btn-sm btn-outline-primary" onclick="toggleBulkEdit()" 
+                    data-en="Bulk Edit" data-es="Edición Masiva">
                 <i class="fas fa-edit me-1"></i>Bulk Edit
             </button>
-            <button class="btn btn-sm btn-outline-success" id="saveAllBtn" style="display: none;" onclick="saveAllChanges()">
+            <button class="btn btn-sm btn-outline-success" id="saveAllBtn" style="display: none;" onclick="saveAllChanges()" 
+                    data-en="Save All" data-es="Guardar Todo">
                 <i class="fas fa-save me-1"></i>Save All
             </button>
         </div>
@@ -218,17 +171,17 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Item Name</th>
-                        <th>Category</th>
-                        <th>Current Stock</th>
-                        <th>Unit</th>
-                        <th>Par Level</th>
-                        <th>Unit Cost</th>
-                        <th>Total Value</th>
-                        <th>Vendors</th>
-                        <th>Status</th>
-                        <th>Last Updated</th>
-                        <th>Actions</th>
+                        <th data-en="Item Name" data-es="Nombre del Artículo">Item Name</th>
+                        <th data-en="Category" data-es="Categoría">Category</th>
+                        <th data-en="Current Stock" data-es="Stock Actual">Current Stock</th>
+                        <th data-en="Unit" data-es="Unidad">Unit</th>
+                        <th data-en="Par Level" data-es="Nivel Mínimo">Par Level</th>
+                        <th data-en="Unit Cost" data-es="Costo por Unidad">Unit Cost</th>
+                        <th data-en="Total Value" data-es="Valor Total">Total Value</th>
+                        <th data-en="Vendors" data-es="Proveedores">Vendors</th>
+                        <th data-en="Status" data-es="Estado">Status</th>
+                        <th data-en="Last Updated" data-es="Última Actualización">Last Updated</th>
+                        <th data-en="Actions" data-es="Acciones">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -265,14 +218,14 @@
                                     <span class="badge bg-secondary me-1">{{ vendor.strip() }}</span>
                                 {% endfor %}
                             {% else %}
-                                <span class="text-muted">No vendors</span>
+                                <span class="text-muted" data-en="No vendors" data-es="Sin proveedores">No vendors</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if item.is_low_stock() %}
-                            <span class="badge bg-warning">Low Stock</span>
+                            <span class="badge bg-warning" data-en="Low Stock" data-es="Poco Stock">Low Stock</span>
                             {% else %}
-                            <span class="badge bg-success">OK</span>
+                            <span class="badge bg-success" data-en="OK" data-es="OK">OK</span>
                             {% endif %}
                         </td>
                         <td>{{ item.last_updated or 'N/A' }}</td>
@@ -298,10 +251,10 @@
         {% else %}
         <div class="text-center py-5">
             <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">No inventory items found</h5>
-            <p class="text-muted">Get started by adding your first inventory item.</p>
+            <h5 class="text-muted" data-en="No inventory items found" data-es="No se encontraron artículos de inventario">No inventory items found</h5>
+            <p class="text-muted" data-en="Get started by adding your first inventory item." data-es="Comience agregando su primer artículo de inventario.">Get started by adding your first inventory item.</p>
             {% if user.has_permission('edit') %}
-            <a href="{{ url_for('add_item') }}" class="btn btn-primary">
+            <a href="{{ url_for('add_item') }}" class="btn btn-primary" data-en="Add First Item" data-es="Agregar Primer Artículo">
                 <i class="fas fa-plus me-2"></i>Add First Item
             </a>
             {% endif %}
@@ -360,7 +313,8 @@ function toggleBulkEdit() {
         });
         
         saveAllBtn.style.display = 'inline-block';
-        document.querySelector('[onclick="toggleBulkEdit()"]').innerHTML = '<i class="fas fa-times me-1"></i>Cancel';
+        const cancelText = currentLanguage === 'es' ? 'Cancelar' : 'Cancel';
+        document.querySelector('[onclick="toggleBulkEdit()"]').innerHTML = `<i class="fas fa-times me-1"></i>${cancelText}`;
     } else {
         // Restore original values
         quantityInputs.forEach(function(input) {
@@ -375,7 +329,8 @@ function toggleBulkEdit() {
         });
         
         saveAllBtn.style.display = 'none';
-        document.querySelector('[onclick="toggleBulkEdit()"]').innerHTML = '<i class="fas fa-edit me-1"></i>Bulk Edit';
+        const bulkEditText = currentLanguage === 'es' ? 'Edición Masiva' : 'Bulk Edit';
+        document.querySelector('[onclick="toggleBulkEdit()"]').innerHTML = `<i class="fas fa-edit me-1"></i>${bulkEditText}`;
     }
 }
 
@@ -483,7 +438,8 @@ function updateSearchResults(count, searchTerm) {
     }
     
     if (searchTerm && searchTerm.trim() !== '') {
-        resultsDiv.innerHTML = `<small><i class="fas fa-search me-1"></i>Showing ${count} items matching "${searchTerm}"<br>Mostrando ${count} artículos que coinciden con "${searchTerm}"</small>`;
+        const searchText = currentLanguage === 'es' ? `Mostrando ${count} artículos que coinciden con "${searchTerm}"` : `Showing ${count} items matching "${searchTerm}"`;
+        resultsDiv.innerHTML = `<small><i class="fas fa-search me-1"></i>${searchText}</small>`;
         resultsDiv.style.display = 'block';
     } else {
         resultsDiv.style.display = 'none';

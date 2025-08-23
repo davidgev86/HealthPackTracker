@@ -119,8 +119,8 @@ The application is designed for simple deployment with minimal infrastructure re
 - **Session Storage**: In-memory sessions don't persist across server restarts
 
 ## Changelog
-- July 28, 2025. Removed category add/delete functionality from main inventory page - users should use dedicated Categories page for category management 
-- July 28, 2025. Added comprehensive Spanish translations throughout the application interface while keeping meal names in English
+- August 23, 2025. Replaced bilingual interface (Spanish below English) with clean English-only display and language toggle button for full Spanish translation
+- July 28, 2025. Removed category add/delete functionality from main inventory page - users should use dedicated Categories page for category management
 - July 27, 2025. Added delete HPM items functionality with confirmation modal for managers and admins
 - July 27, 2025. Added "Add HPM Item" functionality directly from HPM Items page with comprehensive form and HPM vendor auto-assignment
 - July 27, 2025. Added category management functionality to HPM Items page allowing managers/admins to add and delete categories (including default categories)

@@ -16,6 +16,11 @@
                 <i class="fas fa-warehouse me-2"></i>HPM Inventory
             </a>
             
+            <!-- Language Toggle Button -->
+            <button class="btn btn-outline-light btn-sm me-3" onclick="toggleLanguage()" id="langToggle" title="Switch to Spanish">
+                <i class="fas fa-language me-1"></i><span data-en="ES" data-es="EN">ES</span>
+            </button>
+            
             {% if session.username %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -24,44 +29,38 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hpm_items') }}">
-                            <i class="fas fa-star me-1"></i>HPM Items<br>
-                            <small class="text-muted">Artículos HPM</small>
+                        <a class="nav-link" href="{{ url_for('hpm_items') }}" data-en="HPM Items" data-es="Artículos HPM">
+                            <i class="fas fa-star me-1"></i>HPM Items
                         </a>
                     </li>
                     {% if session.role in ['admin', 'manager'] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('vendors') }}">
-                            <i class="fas fa-truck me-1"></i>Vendors<br>
-                            <small class="text-muted">Proveedores</small>
+                        <a class="nav-link" href="{{ url_for('vendors') }}" data-en="Vendors" data-es="Proveedores">
+                            <i class="fas fa-truck me-1"></i>Vendors
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('categories') }}">
-                            <i class="fas fa-tags me-1"></i>Categories<br>
-                            <small class="text-muted">Categorías</small>
+                        <a class="nav-link" href="{{ url_for('categories') }}" data-en="Categories" data-es="Categorías">
+                            <i class="fas fa-tags me-1"></i>Categories
                         </a>
                     </li>
                     {% endif %}
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('waste_log') }}">
-                            <i class="fas fa-trash me-1"></i>Waste Log<br>
-                            <small class="text-muted">Registro de Desperdicios</small>
+                        <a class="nav-link" href="{{ url_for('waste_log') }}" data-en="Waste Log" data-es="Registro de Desperdicios">
+                            <i class="fas fa-trash me-1"></i>Waste Log
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('weekly_waste_reports') }}">
-                            <i class="fas fa-chart-line me-1"></i>Weekly Reports<br>
-                            <small class="text-muted">Reportes Semanales</small>
+                        <a class="nav-link" href="{{ url_for('weekly_waste_reports') }}" data-en="Weekly Reports" data-es="Reportes Semanales">
+                            <i class="fas fa-chart-line me-1"></i>Weekly Reports
                         </a>
                     </li>
                     {% if session.role in ['admin', 'manager'] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('import_export') }}">
-                            <i class="fas fa-file-import me-1"></i>Import/Export<br>
-                            <small class="text-muted">Importar/Exportar</small>
+                        <a class="nav-link" href="{{ url_for('import_export') }}" data-en="Import/Export" data-es="Importar/Exportar">
+                            <i class="fas fa-file-import me-1"></i>Import/Export
                         </a>
                     </li>
                     {% endif %}
@@ -73,9 +72,8 @@
                             <i class="fas fa-user me-1"></i>{{ session.username }} ({{ session.role.title() }})
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout<br>
-                                <small class="text-muted">Cerrar Sesión</small>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}" data-en="Logout" data-es="Cerrar Sesión">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
                             </a></li>
                         </ul>
                     </li>
@@ -117,6 +115,53 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Language Toggle Script -->
+    <script>
+        let currentLanguage = 'en';
+        
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'es' : 'en';
+            
+            // Update all elements with data-en and data-es attributes
+            document.querySelectorAll('[data-en][data-es]').forEach(element => {
+                const text = element.getAttribute('data-' + currentLanguage);
+                if (text) {
+                    // Preserve HTML structure while updating text content
+                    const innerHTML = element.innerHTML;
+                    const iconMatch = innerHTML.match(/<i[^>]*>.*?<\/i>/);
+                    const icon = iconMatch ? iconMatch[0] + ' ' : '';
+                    element.innerHTML = icon + text;
+                }
+            });
+            
+            // Update placeholder texts
+            document.querySelectorAll('[data-placeholder-en][data-placeholder-es]').forEach(element => {
+                const placeholder = element.getAttribute('data-placeholder-' + currentLanguage);
+                if (placeholder) {
+                    element.placeholder = placeholder;
+                }
+            });
+            
+            // Update button text and title
+            const langButton = document.getElementById('langToggle');
+            const langSpan = langButton.querySelector('span');
+            langSpan.textContent = currentLanguage === 'en' ? 'ES' : 'EN';
+            langButton.title = currentLanguage === 'en' ? 'Switch to Spanish' : 'Switch to English';
+            
+            // Save language preference
+            localStorage.setItem('preferredLanguage', currentLanguage);
+        }
+        
+        // Load saved language preference on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+            if (savedLanguage && savedLanguage !== currentLanguage) {
+                toggleLanguage();
+            }
+        });
+    </script>
+    
     {% block scripts %}{% endblock %}
 </body>
 </html>

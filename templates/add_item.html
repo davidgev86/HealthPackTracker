@@ -4,12 +4,11 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-plus me-2"></i>Add New Item<br>
-        <small class="text-muted">Agregar Nuevo Artículo</small>
+    <h2 data-en="Add New Item" data-es="Agregar Nuevo Artículo">
+        <i class="fas fa-plus me-2"></i>Add New Item
     </h2>
-    <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Inventory<br>
-        <small>Volver al Inventario</small>
+    <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary" data-en="Back to Inventory" data-es="Volver al Inventario">
+        <i class="fas fa-arrow-left me-2"></i>Back to Inventory
     </a>
 </div>
 
@@ -17,8 +16,8 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-plus me-2"></i>Add New Inventory Item<br>
-                    <small class="text-muted">Agregar Nuevo Artículo de Inventario</small>
+                <h3 data-en="Add New Inventory Item" data-es="Agregar Nuevo Artículo de Inventario">
+                    <i class="fas fa-plus me-2"></i>Add New Inventory Item
                 </h3>
             </div>
             <div class="card-body">
@@ -26,17 +25,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="name" class="form-label">Item Name <span class="text-danger">*</span><br>
-                                    <small class="text-muted">Nombre del Artículo</small>
-                                </label>
+                                <label for="name" class="form-label" data-en="Item Name" data-es="Nombre del Artículo">Item Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="name" name="name" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="category" class="form-label">Category<br>
-                                    <small class="text-muted">Categoría</small>
-                                </label>
+                                <label for="category" class="form-label" data-en="Category" data-es="Categoría">Category</label>
                                 <select class="form-select" id="category" name="category">
                                     {% for category in categories %}
                                     <option value="{{ category }}">{{ category }}</option>
@@ -49,11 +44,9 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="unit" class="form-label">Unit <span class="text-danger">*</span><br>
-                                    <small class="text-muted">Unidad</small>
-                                </label>
+                                <label for="unit" class="form-label" data-en="Unit" data-es="Unidad">Unit <span class="text-danger">*</span></label>
                                 <select class="form-select" id="unit" name="unit" required>
-                                    <option value="">Select Unit / Seleccionar Unidad</option>
+                                    <option value="" data-en="Select Unit" data-es="Seleccionar Unidad">Select Unit</option>
                                     <option value="pieces">Pieces</option>
                                     <option value="kg">Kilograms</option>
                                     <option value="lbs">Pounds</option>
@@ -69,9 +62,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="quantity" class="form-label">Current Quantity <span class="text-danger">*</span><br>
-                                    <small class="text-muted">Cantidad Actual</small>
-                                </label>
+                                <label for="quantity" class="form-label" data-en="Current Quantity" data-es="Cantidad Actual">Current Quantity <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="quantity" name="quantity" min="0" step="0.01" required>
                             </div>
                         </div>
