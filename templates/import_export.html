@@ -4,11 +4,11 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-file-import me-2"></i>Import/Export<br>
-        <small class="text-muted">Importar/Exportar</small>
+    <h2 data-en="Import/Export" data-es="Importar/Exportar">
+        <i class="fas fa-file-import me-2"></i>Import/Export
     </h2>
     <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Inventory
+        <i class="fas fa-arrow-left me-2"></i><span data-en="Back to Inventory" data-es="Volver al Inventario">Back to Inventory</span>
     </a>
 </div>
 
@@ -16,38 +16,37 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-file-import me-2"></i>Import Inventory<br>
-                    <small class="text-muted">Importar Inventario</small>
+                <h4 data-en="Import Inventory" data-es="Importar Inventario">
+                    <i class="fas fa-file-import me-2"></i>Import Inventory
                 </h4>
             </div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="import_file" class="form-label">Select CSV File / Seleccionar Archivo CSV</label>
+                        <label for="import_file" class="form-label" data-en="Select CSV File" data-es="Seleccionar Archivo CSV">Select CSV File</label>
                         <input type="file" class="form-control" id="import_file" name="import_file" accept=".csv" required>
-                        <div class="form-text">Upload a CSV file with inventory data<br>
-                            <small>Subir un archivo CSV con datos de inventario</small>
-                        </div>
+                        <div class="form-text" data-en="Upload a CSV file with inventory data" data-es="Subir un archivo CSV con datos de inventario">Upload a CSV file with inventory data</div>
                     </div>
                     
                     <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i>CSV Format Requirements:</h6>
+                        <h6 data-en="CSV Format Requirements:" data-es="Requisitos de Formato CSV:">
+                            <i class="fas fa-info-circle me-2"></i>CSV Format Requirements:
+                        </h6>
                         <ul class="mb-0">
-                            <li>Required columns: <code>name</code>, <code>unit</code>, <code>quantity</code>, <code>par_level</code></li>
-                            <li>Optional columns: <code>category</code>, <code>last_updated</code></li>
-                            <li>First row must contain column headers</li>
-                            <li>Quantity and par_level must be numeric values</li>
+                            <li data-en="Required columns: name, unit, quantity, par_level" data-es="Columnas requeridas: name, unit, quantity, par_level">Required columns: <code>name</code>, <code>unit</code>, <code>quantity</code>, <code>par_level</code></li>
+                            <li data-en="Optional columns: category, last_updated" data-es="Columnas opcionales: category, last_updated">Optional columns: <code>category</code>, <code>last_updated</code></li>
+                            <li data-en="First row must contain column headers" data-es="La primera fila debe contener encabezados de columna">First row must contain column headers</li>
+                            <li data-en="Quantity and par_level must be numeric values" data-es="Quantity y par_level deben ser valores numéricos">Quantity and par_level must be numeric values</li>
                         </ul>
                     </div>
                     
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Warning:</strong> Importing will replace all current inventory data.
+                        <strong data-en="Warning:" data-es="Advertencia:">Warning:</strong> <span data-en="Importing will replace all current inventory data." data-es="Importar reemplazará todos los datos de inventario actuales.">Importing will replace all current inventory data.</span>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload me-2"></i>Import Data<br>
-                        <small>Importar Datos</small>
+                        <i class="fas fa-upload me-2"></i><span data-en="Import Data" data-es="Importar Datos">Import Data</span>
                     </button>
                 </form>
             </div>
@@ -57,26 +56,27 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-file-export me-2"></i>Export Inventory<br>
-                    <small class="text-muted">Exportar Inventario</small>
+                <h4 data-en="Export Inventory" data-es="Exportar Inventario">
+                    <i class="fas fa-file-export me-2"></i>Export Inventory
                 </h4>
             </div>
             <div class="card-body">
-                <p>Download your current inventory data as a CSV file for backup or external use.</p>
+                <p data-en="Download your current inventory data as a CSV file for backup or external use." data-es="Descarga tus datos de inventario actuales como un archivo CSV para respaldo o uso externo.">Download your current inventory data as a CSV file for backup or external use.</p>
                 
                 <div class="alert alert-success">
-                    <h6><i class="fas fa-check-circle me-2"></i>Export Includes:</h6>
+                    <h6 data-en="Export Includes:" data-es="Exportación Incluye:">
+                        <i class="fas fa-check-circle me-2"></i>Export Includes:
+                    </h6>
                     <ul class="mb-0">
-                        <li>All inventory items with current quantities</li>
-                        <li>Item categories and units</li>
-                        <li>Par levels and last updated timestamps</li>
-                        <li>Compatible format for re-importing</li>
+                        <li data-en="All inventory items with current quantities" data-es="Todos los artículos de inventario con cantidades actuales">All inventory items with current quantities</li>
+                        <li data-en="Item categories and units" data-es="Categorías y unidades de artículos">Item categories and units</li>
+                        <li data-en="Par levels and last updated timestamps" data-es="Niveles par y marcas de tiempo de última actualización">Par levels and last updated timestamps</li>
+                        <li data-en="Compatible format for re-importing" data-es="Formato compatible para reimportar">Compatible format for re-importing</li>
                     </ul>
                 </div>
                 
                 <a href="{{ url_for('export_csv') }}" class="btn btn-success">
-                    <i class="fas fa-download me-2"></i>Export to CSV<br>
-                    <small>Exportar a CSV</small>
+                    <i class="fas fa-download me-2"></i><span data-en="Export to CSV" data-es="Exportar a CSV">Export to CSV</span>
                 </a>
             </div>
         </div>
@@ -87,10 +87,12 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-table me-2"></i>CSV Template</h4>
+                <h4 data-en="CSV Template" data-es="Plantilla CSV">
+                    <i class="fas fa-table me-2"></i>CSV Template
+                </h4>
             </div>
             <div class="card-body">
-                <p>Use this template to create your own CSV file for importing:</p>
+                <p data-en="Use this template to create your own CSV file for importing:" data-es="Usa esta plantilla para crear tu propio archivo CSV para importar:">Use this template to create your own CSV file for importing:</p>
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -134,7 +136,7 @@
                 
                 <div class="mt-3">
                     <button class="btn btn-outline-primary" onclick="downloadTemplate()">
-                        <i class="fas fa-download me-2"></i>Download Template
+                        <i class="fas fa-download me-2"></i><span data-en="Download Template" data-es="Descargar Plantilla">Download Template</span>
                     </button>
                 </div>
             </div>
