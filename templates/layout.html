@@ -7,6 +7,32 @@
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <style>
+        /* Navigation responsive fixes */
+        .navbar-nav .nav-link {
+            white-space: nowrap;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .navbar-nav .nav-link {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.6rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .navbar-nav .nav-link {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.5rem;
+            }
+        }
+        
+        /* Language toggle positioning */
+        #langToggle {
+            min-width: 60px;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -29,7 +55,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hpm_items') }}" data-en="HPM Items" data-es="Artículos HPM">
+                        <a class="nav-link" href="{{ url_for('hpm_items') }}" data-en="HPM Items" data-es="HPM">
                             <i class="fas fa-star me-1"></i>HPM Items
                         </a>
                     </li>
@@ -48,18 +74,18 @@
                     {% endif %}
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('waste_log') }}" data-en="Waste Log" data-es="Registro de Desperdicios">
+                        <a class="nav-link" href="{{ url_for('waste_log') }}" data-en="Waste Log" data-es="Desperdicios">
                             <i class="fas fa-trash me-1"></i>Waste Log
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('weekly_waste_reports') }}" data-en="Weekly Reports" data-es="Reportes Semanales">
+                        <a class="nav-link" href="{{ url_for('weekly_waste_reports') }}" data-en="Weekly Reports" data-es="Reportes">
                             <i class="fas fa-chart-line me-1"></i>Weekly Reports
                         </a>
                     </li>
                     {% if session.role in ['admin', 'manager'] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('import_export') }}" data-en="Import/Export" data-es="Importar/Exportar">
+                        <a class="nav-link" href="{{ url_for('import_export') }}" data-en="Import/Export" data-es="Importar">
                             <i class="fas fa-file-import me-1"></i>Import/Export
                         </a>
                     </li>
@@ -72,7 +98,7 @@
                             <i class="fas fa-user me-1"></i>{{ session.username }} ({{ session.role.title() }})
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}" data-en="Logout" data-es="Cerrar Sesión">
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}" data-en="Logout" data-es="Salir">
                                 <i class="fas fa-sign-out-alt me-1"></i>Logout
                             </a></li>
                         </ul>
