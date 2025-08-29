@@ -42,10 +42,15 @@
                 <i class="fas fa-warehouse me-2"></i>HPM Inventory
             </a>
             
-            <!-- Language Toggle Button -->
-            <button class="btn btn-outline-light btn-sm me-3" onclick="toggleLanguage()" id="langToggle" title="Switch to Spanish">
-                <i class="fas fa-language me-1"></i><span data-en="ES" data-es="EN">ES</span>
-            </button>
+            <!-- Theme and Language Toggle Buttons -->
+            <div class="d-flex gap-2 me-3">
+                <button class="btn btn-outline-light btn-sm" onclick="toggleTheme()" id="themeToggle" title="Switch to Light Mode">
+                    <i class="fas fa-sun" id="themeIcon"></i>
+                </button>
+                <button class="btn btn-outline-light btn-sm" onclick="toggleLanguage()" id="langToggle" title="Switch to Spanish">
+                    <i class="fas fa-language me-1"></i><span data-en="ES" data-es="EN">ES</span>
+                </button>
+            </div>
             
             {% if session.username %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -219,7 +224,54 @@
             if (savedLanguage && savedLanguage !== currentLanguage) {
                 toggleLanguage();
             }
+            
+            // Load saved theme preference
+            const savedTheme = localStorage.getItem('preferredTheme') || 'dark';
+            if (savedTheme === 'light') {
+                setLightMode();
+            } else {
+                setDarkMode();
+            }
         });
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            
+            if (currentTheme === 'dark') {
+                setLightMode();
+                localStorage.setItem('preferredTheme', 'light');
+            } else {
+                setDarkMode();
+                localStorage.setItem('preferredTheme', 'dark');
+            }
+        }
+        
+        function setLightMode() {
+            const html = document.documentElement;
+            const navbar = document.querySelector('.navbar');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeButton = document.getElementById('themeToggle');
+            
+            html.setAttribute('data-bs-theme', 'light');
+            navbar.className = 'navbar navbar-expand-lg navbar-light bg-light';
+            themeIcon.className = 'fas fa-moon';
+            themeButton.className = 'btn btn-outline-dark btn-sm';
+            themeButton.title = 'Switch to Dark Mode';
+        }
+        
+        function setDarkMode() {
+            const html = document.documentElement;
+            const navbar = document.querySelector('.navbar');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeButton = document.getElementById('themeToggle');
+            
+            html.setAttribute('data-bs-theme', 'dark');
+            navbar.className = 'navbar navbar-expand-lg navbar-dark bg-dark';
+            themeIcon.className = 'fas fa-sun';
+            themeButton.className = 'btn btn-outline-light btn-sm';
+            themeButton.title = 'Switch to Light Mode';
+        }
     </script>
     
     {% block scripts %}{% endblock %}
